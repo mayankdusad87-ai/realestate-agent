@@ -37,7 +37,7 @@ st.markdown("""
 
 st.markdown('<div class="title-text">🏗️ Real Estate Strategy Agent</div>',
             unsafe_allow_html=True)
-st.markdown('<div class="sub-text">AI-powered competitive intelligence for Indian micro-markets</div>',
+st.markdown('<div class="sub-text">AI-powered competitive intelligence for Mumbai micro-markets</div>',
             unsafe_allow_html=True)
 st.divider()
 
