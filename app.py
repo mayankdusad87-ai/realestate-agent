@@ -20,140 +20,60 @@ st.markdown("""
         color: #888888;
         margin-bottom: 24px;
     }
-    .stButton > button {
-        background-color: #B8860B;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 12px 32px;
-        font-size: 15px;
-        font-weight: 600;
-        width: 100%;
-    }
-    .stButton > button:hover {
-        background-color: #D4A017;
-    }
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="title-text">🏗️ Real Estate Strategy Agent</div>',
-            unsafe_allow_html=True)
-st.markdown('<div class="sub-text">AI-powered competitive intelligence '
-            'with real-time market data</div>',
-            unsafe_allow_html=True)
+st.markdown('<div class="title-text">🏗️ Real Estate Strategy Agent</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-text">AI-powered competitive intelligence with real-time market data</div>', unsafe_allow_html=True)
 
-st.info(
-    "📡 This tool fetches real-time data from Google search results "
-    "and analyses it using AI. Always verify figures before client presentations."
-)
 st.divider()
 
-# ── Input form ──
 col1, col2 = st.columns(2)
 
 with col1:
-    micromarket = st.text_input("📍 Micro-market",
-                                placeholder="e.g. Goregaon West")
-    budget = st.text_input("💰 Budget Range",
-                           placeholder="e.g. ₹1.5 Cr – ₹3 Cr")
-    configurations = st.text_input("🏠 Configurations",
-                                   placeholder="e.g. 2BHK and 3BHK")
+    micromarket = st.text_input("📍 Micro-market")
+    budget = st.text_input("💰 Budget Range")
+    configurations = st.text_input("🏠 Configurations")
 
 with col2:
-    city = st.text_input("🏙️ City",
-                         placeholder="e.g. Mumbai, Pune, Bengaluru")
-    product_type = st.selectbox("🏢 Product Type",
-                                ["Residential", "Commercial",
-                                 "Mixed-use", "Plotted Development"])
-    timeline = st.selectbox("📅 Launch Timeline",
-                            ["Immediate (0-3 months)",
-                             "Short-term (3-6 months)",
-                             "Mid-term (6-12 months)",
-                             "Long-term (1-2 years)"])
+    city = st.text_input("🏙️ City")
+    product_type = st.selectbox("🏢 Product Type", ["Residential","Commercial","Mixed-use","Plotted Development"])
+    timeline = st.selectbox("📅 Launch Timeline", ["0-3","3-6","6-12","12+"])
 
 st.divider()
 
-# ── API Keys — entered by user in the app, never stored in code ──
-col_a, col_b = st.columns(2)
-with col_a:
-    groq_key = st.text_input("🔑 Groq API Key",
-                             type="password",
-                             placeholder="Paste your new gsk_ key")
-with col_b:
-    serp_key = st.text_input("🔎 SerpAPI Key",
-                             type="password",
-                             placeholder="Paste your new SerpAPI key")
+groq_key = st.text_input("🔑 Groq API Key", type="password")
+serp_key = st.text_input("🔎 SerpAPI Key", type="password")
 
-run = st.button("🚀 Run Real-Time Market Analysis")
+run = st.button("🚀 Run Analysis")
 
 
 def fetch_real_time_data(micromarket, city, serp_key):
-    searches = [
-        f"property price per sqft {micromarket} {city} 2024 2025",
-        f"new residential projects launch {micromarket} {city} 2024 2025",
-        f"real estate market {micromarket} {city} latest news"
-    ]
-
-    all_results = []
-
-    for query in searches:
-        try:
-            response = requests.get(
-                "https://serpapi.com/search",
-                params={
-                    "q": query,
-                    "api_key": serp_key,
-                    "num": 5,
-                    "hl": "en",
-                    "gl": "in"
-                },
-                timeout=10
-            )
-            data = response.json()
-
-            if "organic_results" in data:
-                for item in data["organic_results"][:5]:
-                    title = item.get("title", "")
-                    snippet = item.get("snippet", "")
-                    source = item.get("source", "")
-                    if snippet:
-                        all_results.append(
-                            f"Source: {source}\n"
-                            f"Title: {title}\n"
-                            f"Info: {snippet}"
-                        )
-        except Exception:
-            all_results.append(f"Search unavailable for: {query}")
-            continue
-
-    return "\n\n---\n\n".join(all_results)
+    try:
+        res = requests.get(
+            "https://serpapi.com/search",
+            params={"q": f"{micromarket} {city} property price", "api_key": serp_key}
+        )
+        data = res.json()
+        return " ".join([i.get("snippet","") for i in data.get("organic_results",[])[:5]])
+    except:
+        return "No data found"
 
 
 if run:
+
     if not micromarket or not city or not budget:
-        st.error("Please fill in micro-market, city, and budget.")
-    elif not groq_key:
-        st.error("Please add your Groq API key.")
-    elif not serp_key:
-        st.error("Please add your SerpAPI key.")
+        st.error("Please fill required fields")
+
+    elif not groq_key or not serp_key:
+        st.error("Add API keys")
+
     else:
-        with st.status("🔍 Fetching real-time market data from Google...",
-                       expanded=True) as status:
-            st.write("Searching current property prices...")
-            st.write("Searching active project launches...")
-            st.write("Searching latest market news...")
-            real_data = fetch_real_time_data(micromarket, city, serp_key)
-            st.write("✅ Real-time data collected!")
-            status.update(label="✅ Market data fetched!", state="complete")
 
-        with st.expander("📄 View raw data fetched from Google"):
-            st.text(real_data)
+        real_data = fetch_real_time_data(micromarket, city, serp_key)
+        real_data = real_data[:2000]
 
-        with st.status("🤖 AI is analysing the real data...",
-                       expanded=True) as status:
-            st.write("Building strategic report...")
-
-            prompt = f"""
+        prompt = f"""
 You are a Head of Pricing Strategy with 20+ years experience at top
 Indian developers like Lodha and Rustomjee.
 
@@ -211,120 +131,87 @@ THEN give 3 clear strategies:
 ### Aggressive (Velocity Play)
 - Launch Price: ₹X
 - Expected Absorption: X units/month
-- When to use: (cash flow pressure / high inventory)
 
 ### Balanced (Optimal Strategy)
 - Launch Price: ₹X
 - Expected Absorption: X units/month
-- Sweet spot between margin & speed
 
 ### Premium (Margin Play)
 - Launch Price: ₹X
 - Expected Absorption: X units/month
-- Risk: slower movement
 
 ----------------------------------------
 
-## 4. LAUNCH EXECUTION PLAN (VERY IMPORTANT)
+## 4. LAUNCH EXECUTION PLAN
 
-Give:
-- Phase 1 (first 20–25 units): ₹X
-- Phase 2: ₹X
-- Phase 3: ₹X
-
-Also include:
-- Floor rise logic (₹/floor)
-- View premium (garden/road)
+- Phase 1 price
+- Phase 2 price
+- Phase 3 price
 
 ----------------------------------------
 
 ## 5. CONFIGURATION PRICING
 
-Give:
-- Carpet size assumptions
-- Ticket size for each config
-- Which config will sell fastest
+- Sizes
+- Ticket size
 
 ----------------------------------------
 
-## 6. KEY RISKS (REAL DEVELOPER RISKS)
+## 6. KEY RISKS
 
-- Pricing too high → absorption impact
-- Inventory overhang
-- Market sentiment
+- Pricing risk
+- Inventory risk
+- Demand risk
 
-----------------------------------------
-
-RULES:
-- Be sharp, not generic
-- Give numbers like a real pricing meeting
-- Prioritise decision-making, not description
 IMPORTANT:
-- Complete ALL sections fully
-- Do NOT stop mid-way
-- Ensure Pricing Strategy section includes ALL 3 strategies in full detail
-- Output must be complete and structured properly
-
-
-Always cite when using real-time data vs your own knowledge.
-Be specific with rupee figures.
+- Complete ALL sections
 """
-            # Uses groq_key variable from the input box — never hardcoded
-            client = Groq(api_key=groq_key)
-            response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}],
-                temperature=0.7,
-                max_tokens=3000
-            )
-            result = response.choices[0].message.content
-            status.update(label="✅ Analysis complete!", state="complete")
 
-# ---- AFTER result is generated ----
-st.success("🎉 Real-time analysis complete!")
+        client = Groq(api_key=groq_key)
 
-# 🔴 EVERYTHING BELOW MUST BE INSIDE if run
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=3000
+        )
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-    "📊 Market Reality",
-    "🏢 Competitors",
-    "💰 Pricing Strategy",
-    "🚀 Launch Plan",
-    "🏠 Configuration",
-    "⚠️ Risks"
-])
+        result = response.choices[0].message.content
 
-sections = result.split("##")
+        st.success("Analysis Complete")
 
-def get_section(index):
-    try:
-        return sections[index]
-    except:
-        return "⚠️ Section incomplete. Please re-run."
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+            "📊 Market Reality",
+            "🏢 Competitors",
+            "💰 Pricing",
+            "🚀 Launch",
+            "🏠 Config",
+            "⚠️ Risks"
+        ])
 
-with tab1:
-    st.markdown(get_section(1))
+        sections = result.split("##")
 
-with tab2:
-    st.markdown(get_section(2))
+        def get_section(i):
+            try:
+                return sections[i]
+            except:
+                return "Section missing"
 
-with tab3:
-    st.markdown(get_section(3))
+        with tab1:
+            st.markdown(get_section(1))
 
-with tab4:
-    st.markdown(get_section(4))
+        with tab2:
+            st.markdown(get_section(2))
 
-with tab5:
-    st.markdown(get_section(5))
+        with tab3:
+            st.markdown(get_section(3))
 
-with tab6:
-    st.markdown(get_section(6))
+        with tab4:
+            st.markdown(get_section(4))
 
-st.divider()
+        with tab5:
+            st.markdown(get_section(5))
 
-st.download_button(
-    label="📥 Download Full Report",
-    data=result,
-    file_name=f"{micromarket}_{city}_analysis.txt",
-    mime="text/plain"
-)
+        with tab6:
+            st.markdown(get_section(6))
+
+        st.download_button("Download Report", result)
