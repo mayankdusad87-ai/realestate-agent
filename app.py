@@ -290,7 +290,7 @@ Be specific with rupee figures.
     "🏠 Configuration",
     "⚠️ Risks"
 ])
-        sections = result.split("##")
+sections = result.split("##")
 def get_section(index):
     try:
         return sections[index]
