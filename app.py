@@ -281,15 +281,8 @@ Be specific with rupee figures.
             status.update(label="✅ Analysis complete!", state="complete")
 
         st.success("🎉 Real-time analysis complete!")
-if run:
-    if not micromarket or not city or not groq_key or not serp_key:
-        st.error("Fill all required fields")
-    else:
-        # ---- API CALL ----
-        result = response.choices[0].message.content
 
-        st.success("Analysis Complete")
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Market Reality",
     "🏢 Competitors",
     "💰 Pricing Strategy",
@@ -297,15 +290,12 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "🏠 Configuration",
     "⚠️ Risks"
 ])
-
-sections = result.split("##")
-
+        sections = result.split("##")
 def get_section(index):
     try:
         return sections[index]
     except:
         return "⚠️ Section incomplete. Please re-run."
-
 with tab1:
     st.markdown(get_section(1))
 
@@ -322,7 +312,8 @@ with tab5:
     st.markdown(get_section(5))
 
 with tab6:
-    st.markdown(get_section(6))    
+    st.markdown(get_section(6))
+    
 st.divider()
 st.download_button(
             label="📥 Download Full Report",
