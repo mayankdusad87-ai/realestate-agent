@@ -259,6 +259,11 @@ RULES:
 - Be sharp, not generic
 - Give numbers like a real pricing meeting
 - Prioritise decision-making, not description
+IMPORTANT:
+- Complete ALL sections fully
+- Do NOT stop mid-way
+- Ensure Pricing Strategy section includes ALL 3 strategies in full detail
+- Output must be complete and structured properly
 
 
 Always cite when using real-time data vs your own knowledge.
@@ -268,7 +273,9 @@ Be specific with rupee figures.
             client = Groq(api_key=groq_key)
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
-                messages=[{"role": "user", "content": prompt}]
+                messages=[{"role": "user", "content": prompt}],
+                temperature=0.7,
+                max_tokens=3000
             )
             result = response.choices[0].message.content
             status.update(label="✅ Analysis complete!", state="complete")
