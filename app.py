@@ -281,7 +281,14 @@ Be specific with rupee figures.
             status.update(label="✅ Analysis complete!", state="complete")
 
         st.success("🎉 Real-time analysis complete!")
+if run:
+    if not micromarket or not city or not groq_key or not serp_key:
+        st.error("Fill all required fields")
+    else:
+        # ---- API CALL ----
+        result = response.choices[0].message.content
 
+        st.success("Analysis Complete")
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Market Reality",
     "🏢 Competitors",
