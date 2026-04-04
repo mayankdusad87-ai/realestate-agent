@@ -288,25 +288,16 @@ Be specific with rupee figures.
             "💰 Pricing",
             "⚠️ Risks"
         ])
-sections = result.split("##")
+        sections = result.split("##")
 
-def get_section(index):
-    try:
-        return sections[index]
-    except:
-        return "⚠️ Section incomplete. Please re-run."
-
-with tab1:
-    st.markdown(get_section(1))
-with tab2:
-    st.markdown(get_section(2))
-with tab3:
-    st.markdown(get_section(3))
-with tab4:
-    st.markdown(get_section(4))
-
-       
-
+        with tab1:
+            st.markdown(sections[1] if len(sections) > 1 else result)
+        with tab2:
+            st.markdown(sections[2] if len(sections) > 2 else result)
+        with tab3:
+            st.markdown(sections[3] if len(sections) > 3 else result)
+        with tab4:
+            st.markdown(sections[4] if len(sections) > 4 else result)
         st.divider()
         st.download_button(
             label="📥 Download Full Report",
