@@ -310,8 +310,8 @@ with tab5:
 with tab6:
     st.markdown(get_section(6))
     
-        st.divider()
-        st.download_button(
+st.divider()
+st.download_button(
             label="📥 Download Full Report",
             data=result,
             file_name=f"{micromarket}_{city}_analysis.txt",
