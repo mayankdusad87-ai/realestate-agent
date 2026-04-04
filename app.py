@@ -154,48 +154,112 @@ if run:
             st.write("Building strategic report...")
 
             prompt = f"""
-You are a senior real estate strategy analyst specialising in Indian
-residential markets with 15 years of experience.
+You are a Head of Pricing Strategy with 20+ years experience at top
+Indian developers like Lodha and Rustomjee.
 
-A developer is planning to launch a project:
+You do NOT give generic reports. You give sharp, decision-oriented
+pricing strategies focused on absorption, cash flow and margin.
+
+PROJECT DETAILS:
 - Micro-market: {micromarket}, {city}
 - Budget range: {budget}
 - Product type: {product_type}
-- Target configurations: {configurations}
+- Configurations: {configurations}
 - Launch timeline: {timeline}
 
-IMPORTANT: I have fetched the following REAL-TIME data from Google
-search results today. Use this as your PRIMARY data source.
-Analyse it carefully and extract pricing, project names, and
-market signals from it:
+You are also given REAL-TIME MARKET DATA below. This is your base input.
 
-=== REAL-TIME MARKET DATA ===
+=== REAL MARKET DATA ===
 {real_data}
-=== END OF REAL-TIME DATA ===
+=== END ===
 
-Based on the above real data AND your own market knowledge,
-provide a report with EXACTLY these 4 sections:
+Your job is to think like a developer launching inventory and answer:
+👉 What price should I launch at?
+👉 How will sales move at different prices?
+👉 How should I phase pricing?
 
-## 1. MARKET OVERVIEW
-- What the real-time data tells us about current prices
-- Price range seen in the data (minimum to maximum)
-- Current market temperature based on the news found
-- Buyer profile for this micro-market
+----------------------------------------
 
-## 2. COMPETITOR BENCHMARK
-Extract real projects mentioned in the data above.
-Fill gaps with your knowledge if needed.
-| Project Name | Developer | Config | Price/sqft | All-in Price | Stage |
+## 1. MARKET REALITY (NO FLUFF)
+- True market trading price (not advertised)
+- Realistic price band (min–max)
+- Inventory pressure (high / moderate / low)
+- Who is actually buying (end-user / investor)
 
-## 3. PRICING RECOMMENDATION
-Based on the real data found:
-- Recommended launch price per sqft with justification
-- Price for each configuration (carpet area + all-in price)
-- One payment scheme to offer buyers
+----------------------------------------
 
-## 4. TOP 3 RISKS
-Based on the market signals in the real data:
-List 3 risks with severity (High / Medium / Low) for each.
+## 2. COMPETITOR POSITIONING
+Do NOT just list projects.
+
+Explain:
+- Who is premium leader
+- Who is undercutting
+- Where is price gap in market
+
+Then give table:
+| Project | Developer | Price/sqft | Positioning |
+
+----------------------------------------
+
+## 3. PRICING STRATEGY (CORE SECTION)
+
+FIRST:
+- Market median price
+
+THEN give 3 clear strategies:
+
+### Aggressive (Velocity Play)
+- Launch Price: ₹X
+- Expected Absorption: X units/month
+- When to use: (cash flow pressure / high inventory)
+
+### Balanced (Optimal Strategy)
+- Launch Price: ₹X
+- Expected Absorption: X units/month
+- Sweet spot between margin & speed
+
+### Premium (Margin Play)
+- Launch Price: ₹X
+- Expected Absorption: X units/month
+- Risk: slower movement
+
+----------------------------------------
+
+## 4. LAUNCH EXECUTION PLAN (VERY IMPORTANT)
+
+Give:
+- Phase 1 (first 20–25 units): ₹X
+- Phase 2: ₹X
+- Phase 3: ₹X
+
+Also include:
+- Floor rise logic (₹/floor)
+- View premium (garden/road)
+
+----------------------------------------
+
+## 5. CONFIGURATION PRICING
+
+Give:
+- Carpet size assumptions
+- Ticket size for each config
+- Which config will sell fastest
+
+----------------------------------------
+
+## 6. KEY RISKS (REAL DEVELOPER RISKS)
+
+- Pricing too high → absorption impact
+- Inventory overhang
+- Market sentiment
+
+----------------------------------------
+
+RULES:
+- Be sharp, not generic
+- Give numbers like a real pricing meeting
+- Prioritise decision-making, not description
+
 
 Always cite when using real-time data vs your own knowledge.
 Be specific with rupee figures.
