@@ -292,18 +292,24 @@ Be specific with rupee figures.
 ])
         sections = result.split("##")
 
-        with tab1:
+       with tab1:
     st.markdown(get_section(1))
+
 with tab2:
     st.markdown(get_section(2))
+
 with tab3:
     st.markdown(get_section(3))
+
 with tab4:
     st.markdown(get_section(4))
+
 with tab5:
     st.markdown(get_section(5))
+
 with tab6:
     st.markdown(get_section(6))
+    
         st.divider()
         st.download_button(
             label="📥 Download Full Report",
