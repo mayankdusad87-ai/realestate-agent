@@ -280,7 +280,10 @@ Be specific with rupee figures.
             result = response.choices[0].message.content
             status.update(label="✅ Analysis complete!", state="complete")
 
+# ---- AFTER result is generated ----
 st.success("🎉 Real-time analysis complete!")
+
+# 🔴 EVERYTHING BELOW MUST BE INSIDE if run
 
 tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Market Reality",
@@ -290,12 +293,15 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "🏠 Configuration",
     "⚠️ Risks"
 ])
+
 sections = result.split("##")
+
 def get_section(index):
     try:
         return sections[index]
     except:
         return "⚠️ Section incomplete. Please re-run."
+
 with tab1:
     st.markdown(get_section(1))
 
@@ -313,11 +319,12 @@ with tab5:
 
 with tab6:
     st.markdown(get_section(6))
-    
+
 st.divider()
+
 st.download_button(
-            label="📥 Download Full Report",
-            data=result,
-            file_name=f"{micromarket}_{city}_analysis.txt",
-            mime="text/plain"
-        )
+    label="📥 Download Full Report",
+    data=result,
+    file_name=f"{micromarket}_{city}_analysis.txt",
+    mime="text/plain"
+)
