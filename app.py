@@ -1,0 +1,148 @@
+import streamlit as st
+from groq import Groq
+
+st.set_page_config(
+    page_title="RE Strategy Agent",
+    page_icon="🏗️",
+    layout="wide"
+)
+
+st.markdown("""
+<style>
+    .title-text {
+        font-size: 32px;
+        font-weight: 700;
+        color: #B8860B;
+    }
+    .sub-text {
+        font-size: 14px;
+        color: #888888;
+        margin-bottom: 24px;
+    }
+    .stButton > button {
+        background-color: #B8860B;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 12px 32px;
+        font-size: 15px;
+        font-weight: 600;
+        width: 100%;
+    }
+    .stButton > button:hover {
+        background-color: #D4A017;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown('<div class="title-text">🏗️ Real Estate Strategy Agent</div>',
+            unsafe_allow_html=True)
+st.markdown('<div class="sub-text">AI-powered competitive intelligence for Indian micro-markets</div>',
+            unsafe_allow_html=True)
+st.divider()
+
+col1, col2 = st.columns(2)
+
+with col1:
+    micromarket = st.text_input("📍 Micro-market",
+                                placeholder="e.g. Goregaon West")
+    budget = st.text_input("💰 Budget Range",
+                           placeholder="e.g. ₹1.5 Cr – ₹3 Cr")
+    configurations = st.text_input("🏠 Configurations",
+                                   placeholder="e.g. 2BHK and 3BHK")
+
+with col2:
+    city = st.text_input("🏙️ City",
+                         placeholder="e.g. Mumbai, Pune, Bengaluru")
+    product_type = st.selectbox("🏢 Product Type",
+                                ["Residential", "Commercial",
+                                 "Mixed-use", "Plotted Development"])
+    timeline = st.selectbox("📅 Launch Timeline",
+                            ["Immediate (0-3 months)",
+                             "Short-term (3-6 months)",
+                             "Mid-term (6-12 months)",
+                             "Long-term (1-2 years)"])
+
+st.divider()
+
+api_key = st.text_input("🔑 Your Groq API Key",
+                        type="password",
+                        placeholder="Paste your gsk_ key here")
+
+run = st.button("🚀 Run Market Analysis")
+
+if run:
+    if not micromarket or not city or not budget or not api_key:
+        st.error("Please fill in all fields and add your API key.")
+    else:
+        with st.spinner("Analysing market... this takes 10-15 seconds"):
+
+            prompt = f"""
+You are a senior real estate strategy analyst specialising in Indian
+residential markets with 15 years of experience.
+
+A developer is planning to launch a project with these details:
+- Micro-market: {micromarket}, {city}
+- Budget range: {budget}
+- Product type: {product_type}
+- Target configurations: {configurations}
+- Launch timeline: {timeline}
+
+Provide a detailed strategic report with EXACTLY these 4 sections:
+
+## 1. MARKET OVERVIEW
+- Average price per sqft in this micro-market
+- Price range (minimum to maximum)
+- Current market temperature (hot / stable / slow)
+- Who is buying here (buyer profile)
+
+## 2. COMPETITOR BENCHMARK
+Create a table with 4 real competing projects:
+| Project Name | Developer | Config | Price/sqft | All-in Price | Stage |
+
+## 3. PRICING RECOMMENDATION
+- Recommended launch price per sqft with justification
+- Price for each configuration (carpet area + all-in price)
+- One payment scheme to offer buyers
+
+## 4. TOP 3 RISKS
+List the 3 biggest risks with severity (High / Medium / Low) for each.
+
+Be specific with rupee figures. Think like a developer maximising
+absorption and margin.
+"""
+
+            client = Groq(api_key=api_key)
+            response = client.chat.completions.create(
+                model="llama-3.3-70b-versatile",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            result = response.choices[0].message.content
+
+        st.success("Analysis complete!")
+
+        tab1, tab2, tab3, tab4 = st.tabs([
+            "📊 Market Overview",
+            "🏢 Competitors",
+            "💰 Pricing",
+            "⚠️ Risks"
+        ])
+
+        sections = result.split("##")
+
+        with tab1:
+            st.markdown(sections[1] if len(sections) > 1 else result)
+        with tab2:
+            st.markdown(sections[2] if len(sections) > 2 else result)
+        with tab3:
+            st.markdown(sections[3] if len(sections) > 3 else result)
+        with tab4:
+            st.markdown(sections[4] if len(sections) > 4 else result)
+
+        st.divider()
+        st.download_button(
+            label="📥 Download Full Report",
+            data=result,
+            file_name=f"{micromarket}_{city}_analysis.txt",
+            mime="text/plain"
+        )
