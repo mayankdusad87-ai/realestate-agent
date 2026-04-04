@@ -291,7 +291,11 @@ Be specific with rupee figures.
     "⚠️ Risks"
 ])
         sections = result.split("##")
-
+def get_section(index):
+    try:
+        return sections[index]
+    except:
+        return "⚠️ Section incomplete. Please re-run."
 with tab1:
     st.markdown(get_section(1))
 
