@@ -292,7 +292,7 @@ Be specific with rupee figures.
 ])
         sections = result.split("##")
 
-       with tab1:
+with tab1:
     st.markdown(get_section(1))
 
 with tab2:
