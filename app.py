@@ -15,7 +15,7 @@ st.caption("AI-powered pricing decision engine for developers")
 col1, col2 = st.columns(2)
 
 with col1:
-    micromarket = st.text_input("📍 Micro-market")
+    micromarket = st.text_input("📍 Micro-market",placeholder="e.g. Goregaon West"))
     budget = st.text_input("💰 Budget Range")
     configurations = st.text_input("🏠 Configurations")
 
