@@ -291,6 +291,7 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "⚠️ Risks"
 ])
 sections = result.split("##")
+
 def get_section(index):
     try:
         return sections[index]
