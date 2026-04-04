@@ -293,31 +293,31 @@ tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
 
 sections = result.split("##")
 
- def get_section(index):
+def get_section(index):
     try:
         return sections[index]
     except:
         return "⚠️ Section incomplete. Please re-run."
 
- with tab1:
+with tab1:
     st.markdown(get_section(1))
 
- with tab2:
+with tab2:
     st.markdown(get_section(2))
 
 with tab3:
     st.markdown(get_section(3))
 
- with tab4:
+with tab4:
     st.markdown(get_section(4))
 
- with tab5:
+with tab5:
     st.markdown(get_section(5))
 
- with tab6:
+with tab6:
     st.markdown(get_section(6))    
- st.divider()
- st.download_button(
+st.divider()
+st.download_button(
             label="📥 Download Full Report",
             data=result,
             file_name=f"{micromarket}_{city}_analysis.txt",
