@@ -282,7 +282,7 @@ Be specific with rupee figures.
 
         st.success("🎉 Real-time analysis complete!")
 
-        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Market Reality",
     "🏢 Competitors",
     "💰 Pricing Strategy",
