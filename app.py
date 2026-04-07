@@ -24,165 +24,110 @@ st.divider()
 col1, col2 = st.columns(2)
 
 with col1:
-    micromarket = st.text_input(
-        "📍 Micro-market",
-        placeholder="e.g. Goregaon West / Wakad / Whitefield"
-    )
-
-    budget = st.text_input(
-        "💰 Budget Range",
-        placeholder="e.g. ₹1.5 Cr – ₹2.5 Cr (target ticket size)"
-    )
-
-    configurations = st.text_input(
-        "🏠 Configurations",
-        placeholder="e.g. 2BHK (650 sqft), 3BHK (900 sqft)"
-    )
+    micromarket = st.text_input("📍 Micro-market", placeholder="e.g. Goregaon West")
+    budget = st.text_input("💰 Budget", placeholder="₹1.5–2.5 Cr")
+    configurations = st.text_input("🏠 Config", placeholder="2BHK (650), 3BHK (900)")
 
 with col2:
-    city = st.text_input(
-        "🏙️ City",
-        placeholder="e.g. Mumbai / Pune / Bangalore"
-    )
-
-    product_type = st.selectbox(
-        "🏢 Product Type",
-        ["Residential", "Commercial", "Mixed-use", "Plotted Development"]
-    )
-
-    timeline = st.selectbox(
-        "📅 Launch Timeline",
-        ["Immediate (0-3 months)", "3-6 months", "6-12 months", "1+ year"]
-    )
+    city = st.text_input("🏙️ City", placeholder="Mumbai")
+    product_type = st.selectbox("🏢 Type", ["Residential","Commercial"])
+    timeline = st.selectbox("📅 Timeline", ["0-3","3-6","6-12"])
 
 st.divider()
 
-groq_key = st.text_input("🔑 Groq API Key", type="password")
-serp_key = st.text_input("🔎 SerpAPI Key", type="password")
+groq_key = st.text_input("Groq Key", type="password")
+serp_key = st.text_input("Serp Key", type="password")
 
-run = st.button("🚀 Run Market Analysis")
+run = st.button("Run Analysis")
 
 # ── FETCH DATA ──
-def fetch_real_time_data(micromarket, city, serp_key):
+def fetch_data(micromarket, city, serp_key):
     try:
         res = requests.get(
             "https://serpapi.com/search",
-            params={"q": f"{micromarket} {city} property price", "api_key": serp_key},
-            timeout=10
+            params={"q": f"{micromarket} {city} property price", "api_key": serp_key}
         )
         data = res.json()
-        return " ".join([i.get("snippet", "") for i in data.get("organic_results", [])[:5]])
+        return " ".join([i.get("snippet","") for i in data.get("organic_results",[])[:5]])
     except:
-        return "No data found"
+        return "No data"
 
-# ── RUN LOGIC ──
+# ── RUN ──
 if run:
 
-    if not micromarket or not city or not budget:
-        st.error("Please fill required fields")
-
-    elif not groq_key or not serp_key:
-        st.error("Please add API keys")
+    if not micromarket or not city or not groq_key or not serp_key:
+        st.error("Fill all fields")
 
     else:
 
-        real_data = fetch_real_time_data(micromarket, city, serp_key)
+        real_data = fetch_data(micromarket, city, serp_key)
         real_data = real_data[:2000]
 
         prompt = f"""
-You are a Head of Pricing Strategy with 20+ years experience at top Indian developers like Lodha and Rustomjee.
+You are a Head of Pricing Strategy.
 
-PROJECT DETAILS:
-- Micro-market: {micromarket}, {city}
-- Budget range: {budget}
-- Product type: {product_type}
-- Configurations: {configurations}
-- Launch timeline: {timeline}
+PROJECT:
+{micromarket}, {city}
+Budget: {budget}
+Config: {configurations}
 
-REAL MARKET DATA:
+DATA:
 {real_data}
 
-----------------------------------------
+SECTION_1: MARKET
+- price
+- demand
 
-## 1. MARKET REALITY
-- True trading price
-- Price band
-- Buyer type
+SECTION_2: COMPETITORS
+- key players
 
-## 2. COMPETITOR POSITIONING
-- Market leaders
-- Undercutters
-- Price gap
-| Project | Developer | Price/sqft | Positioning |
+SECTION_3: PRICING
+Aggressive:
+₹X/sqft
+All-in ₹X Cr
 
-## 3. PRICING STRATEGY
+Balanced:
+₹X/sqft
+All-in ₹X Cr
 
-- Market median price
+Premium:
+₹X/sqft
+All-in ₹X Cr
 
-### Aggressive
-- Launch Price: ₹X /sqft (PSF)
-- All-in Price: ₹X Cr
-- Absorption: X units/month
+SECTION_4: LAUNCH
+- phase pricing
 
-### Balanced
-- Launch Price: ₹X /sqft (PSF)
-- All-in Price: ₹X Cr
-- Absorption: X units/month
+SECTION_5: CONFIG
+- sizes
 
-### Premium
-- Launch Price: ₹X /sqft (PSF)
-- All-in Price: ₹X Cr
-- Absorption: X units/month
+SECTION_6: RISKS
+- key risks
 
 IMPORTANT:
-- Clearly show PSF and All-in separately
-
-## 4. LAUNCH PLAN
-- Phase pricing
-- Floor rise
-
-## 5. CONFIGURATION
-- Sizes
-- Ticket sizes
-
-## 6. RISKS
-- Pricing risk
-- Inventory risk
-- Demand risk
-
-IMPORTANT:
-- Complete all sections fully
+use all sections properly
 """
 
         client = Groq(api_key=groq_key)
 
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
-            messages=[{"role": "user", "content": prompt}],
-            max_tokens=3000
+            messages=[{"role":"user","content":prompt}],
+            max_tokens=2000
         )
 
         result = response.choices[0].message.content
 
-        st.success("✅ Analysis Complete")
+        st.success("Done")
 
         # ── TABS ──
         tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-            "📊 Market",
-            "🏢 Competitors",
-            "💰 Pricing (PSF + All-in)",
-            "🚀 Launch Plan",
-            "🏠 Config",
-            "⚠️ Risks"
+            "Market","Competitors","Pricing (PSF + All-in)","Launch","Config","Risks"
         ])
 
-        sections = result.split("##")
+        sections = result.split("SECTION_")
 
         def get_section(i):
-            try:
-                return sections[i]
-            except:
-                return "⚠️ Section missing"
+            return sections[i] if i < len(sections) else "Missing"
 
         with tab1:
             st.markdown(get_section(1))
@@ -202,4 +147,4 @@ IMPORTANT:
         with tab6:
             st.markdown(get_section(6))
 
-        st.download_button("📥 Download Report", result)
+        st.download_button("Download Report", result)
