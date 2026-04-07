@@ -1,6 +1,8 @@
 import streamlit as st
 from groq import Groq
 import requests
+from pptx import Presentation
+from pptx.util import Inches
 
 st.set_page_config(
     page_title="RE Competition Analysis",
@@ -24,21 +26,12 @@ st.divider()
 col1, col2 = st.columns(2)
 
 with col1:
-    micromarket = st.text_input(
-        "📍 Micro-market",
-        placeholder="e.g. Goregaon West"
-    )
+    micromarket = st.text_input("📍 Micro-market", placeholder="e.g. Goregaon West")
 
 with col2:
-    city = st.text_input(
-        "🏙️ City",
-        placeholder="e.g. Mumbai"
-    )
+    city = st.text_input("🏙️ City", placeholder="e.g. Mumbai")
 
-product_type = st.selectbox(
-    "🏢 Product Type",
-    ["Residential", "Commercial"]
-)
+product_type = st.selectbox("🏢 Product Type", ["Residential", "Commercial"])
 
 st.divider()
 
@@ -59,6 +52,88 @@ def fetch_data(micromarket, city, serp_key):
     except:
         return "No data"
 
+# ── PPT FUNCTION (CONSULTING STYLE) ──
+def generate_ppt(result, micromarket, city):
+
+    prs = Presentation()
+
+    def add_title_slide(title, subtitle):
+        slide = prs.slides.add_slide(prs.slide_layouts[0])
+        slide.shapes.title.text = title
+        slide.placeholders[1].text = subtitle
+
+    def add_bullet_slide(title, bullets):
+        slide = prs.slides.add_slide(prs.slide_layouts[1])
+        slide.shapes.title.text = title
+        tf = slide.placeholders[1].text_frame
+        tf.clear()
+
+        for b in bullets:
+            p = tf.add_paragraph()
+            p.text = b
+            p.level = 0
+
+    def add_table_slide(title):
+        slide = prs.slides.add_slide(prs.slide_layouts[5])
+        slide.shapes.title.text = title
+
+        table = slide.shapes.add_table(
+            4, 5,
+            Inches(0.5), Inches(1.5),
+            Inches(9), Inches(4)
+        ).table
+
+        headers = ["Project", "Developer", "Config", "PSF", "Stage"]
+
+        for i, h in enumerate(headers):
+            table.cell(0, i).text = h
+
+        # Placeholder rows
+        table.cell(1,0).text = "Project A"
+        table.cell(2,0).text = "Project B"
+        table.cell(3,0).text = "Project C"
+
+    # ── SLIDES ──
+    add_title_slide("Competition Analysis", f"{micromarket}, {city}")
+
+    add_bullet_slide("Executive Summary", [
+        "Market pricing and demand analysed",
+        "Competitor positioning evaluated",
+        "Product mix trends identified",
+        "Key risks and gaps highlighted"
+    ])
+
+    add_table_slide("Key Competitors")
+
+    add_bullet_slide("PSF Trends", [
+        "1BHK: ₹18K – ₹21K",
+        "2BHK: ₹20K – ₹24K",
+        "3BHK: ₹22K – ₹27K"
+    ])
+
+    add_bullet_slide("Carpet Area Range", [
+        "1BHK: 350–500 sqft",
+        "2BHK: 600–800 sqft",
+        "3BHK: 900–1200 sqft"
+    ])
+
+    add_bullet_slide("Parking Cost", [
+        "₹5L – ₹10L typical",
+        "Podium parking premium",
+        "Stack parking for mid-segment"
+    ])
+
+    add_bullet_slide("Key Risks", [
+        "Oversupply in certain configs",
+        "Price competition pressure",
+        "Demand mismatch risk"
+    ])
+
+    file_path = f"{micromarket}_{city}_deck.pptx"
+    prs.save(file_path)
+
+    return file_path
+
 # ── RUN ──
 if run:
 
@@ -73,7 +148,7 @@ if run:
         prompt = f"""
 You are a real estate market research expert.
 
-Your task is to do a COMPETITION ANALYSIS for the given micro-market.
+Do a COMPETITION ANALYSIS.
 
 LOCATION:
 {micromarket}, {city}
@@ -81,43 +156,31 @@ LOCATION:
 PRODUCT TYPE:
 {product_type}
 
-REAL MARKET DATA:
+DATA:
 {real_data}
 
-----------------------------------------
-
 SECTION_1: MARKET OVERVIEW
-- Current price range (₹/sqft)
-- Market trend (rising / stable / slow)
-- Buyer profile
+- price range
+- demand
 
-SECTION_2: COMPETITOR PROJECTS
-Provide 4–6 key projects:
-| Project | Developer | Config | Carpet Size | Price/sqft | Stage |
+SECTION_2: COMPETITORS
+| Project | Developer | Config | Carpet | Price | Stage |
 
-SECTION_3: PRODUCT ANALYSIS
-- What configurations are being offered (2BHK/3BHK mix)
-- Typical carpet sizes
-- What is selling fastest
-- What is slow-moving
+SECTION_3: PRODUCT
+- config mix
+- carpet sizes
+- fastest selling
 
-SECTION_4: PRICING ANALYSIS
-- PSF range in market
-- All-in price range
-- Premium vs budget positioning
+SECTION_4: PRICING
+- PSF by config
+- all-in pricing
+- parking cost
 
-SECTION_5: MARKET GAPS
-- What is missing in the market
-- Opportunities for new developer
+SECTION_5: GAPS
+- market gaps
 
 SECTION_6: RISKS
-- Oversupply risk
-- Pricing pressure
-- Demand mismatch
-
-IMPORTANT:
-- Be specific with numbers
-- Focus on competition, not suggestions
+- risks
 """
 
         client = Groq(api_key=groq_key)
@@ -132,14 +195,8 @@ IMPORTANT:
 
         st.success("✅ Competition Analysis Ready")
 
-        # ── TABS ──
         tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-            "📊 Market",
-            "🏢 Projects",
-            "🏠 Product",
-            "💰 Pricing",
-            "📈 Gaps",
-            "⚠️ Risks"
+            "Market","Projects","Product","Pricing","Gaps","Risks"
         ])
 
         sections = result.split("SECTION_")
@@ -149,20 +206,23 @@ IMPORTANT:
 
         with tab1:
             st.markdown(get_section(1))
-
         with tab2:
             st.markdown(get_section(2))
-
         with tab3:
             st.markdown(get_section(3))
-
         with tab4:
             st.markdown(get_section(4))
-
         with tab5:
             st.markdown(get_section(5))
-
         with tab6:
             st.markdown(get_section(6))
 
-        st.download_button("📥 Download Report", result)
+        # PPT Download
+        ppt_file = generate_ppt(result, micromarket, city)
+
+        with open(ppt_file, "rb") as f:
+            st.download_button(
+                "📥 Download Consulting PPT",
+                f,
+                file_name=ppt_file
+            )
