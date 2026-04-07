@@ -3,7 +3,7 @@ from groq import Groq
 import requests
 
 st.set_page_config(
-    page_title="RE Strategy Agent",
+    page_title="RE Competition Analysis",
     page_icon="🏗️",
     layout="wide"
 )
@@ -15,8 +15,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-st.markdown('<div class="title-text">🏗️ Real Estate Strategy Agent</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-text">AI-powered pricing decision engine</div>', unsafe_allow_html=True)
+st.markdown('<div class="title-text">🏗️ Real Estate Competition Analysis</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-text">AI-powered micro-market competitor intelligence</div>', unsafe_allow_html=True)
 
 st.divider()
 
@@ -24,28 +24,35 @@ st.divider()
 col1, col2 = st.columns(2)
 
 with col1:
-    micromarket = st.text_input("📍 Micro-market", placeholder="e.g. Goregaon West")
-    budget = st.text_input("💰 Budget", placeholder="₹1.5–2.5 Cr")
-    configurations = st.text_input("🏠 Config", placeholder="2BHK (650), 3BHK (900)")
+    micromarket = st.text_input(
+        "📍 Micro-market",
+        placeholder="e.g. Goregaon West"
+    )
 
 with col2:
-    city = st.text_input("🏙️ City", placeholder="Mumbai")
-    product_type = st.selectbox("🏢 Type", ["Residential","Commercial"])
-    timeline = st.selectbox("📅 Timeline", ["0-3","3-6","6-12"])
+    city = st.text_input(
+        "🏙️ City",
+        placeholder="e.g. Mumbai"
+    )
+
+product_type = st.selectbox(
+    "🏢 Product Type",
+    ["Residential", "Commercial"]
+)
 
 st.divider()
 
 groq_key = st.text_input("Groq Key", type="password")
 serp_key = st.text_input("Serp Key", type="password")
 
-run = st.button("Run Analysis")
+run = st.button("Run Competition Analysis")
 
 # ── FETCH DATA ──
 def fetch_data(micromarket, city, serp_key):
     try:
         res = requests.get(
             "https://serpapi.com/search",
-            params={"q": f"{micromarket} {city} property price", "api_key": serp_key}
+            params={"q": f"{micromarket} {city} real estate projects pricing", "api_key": serp_key}
         )
         data = res.json()
         return " ".join([i.get("snippet","") for i in data.get("organic_results",[])[:5]])
@@ -64,47 +71,53 @@ if run:
         real_data = real_data[:2000]
 
         prompt = f"""
-You are a Head of Pricing Strategy.
+You are a real estate market research expert.
 
-PROJECT:
+Your task is to do a COMPETITION ANALYSIS for the given micro-market.
+
+LOCATION:
 {micromarket}, {city}
-Budget: {budget}
-Config: {configurations}
 
-DATA:
+PRODUCT TYPE:
+{product_type}
+
+REAL MARKET DATA:
 {real_data}
 
-SECTION_1: MARKET
-- price
-- demand
+----------------------------------------
 
-SECTION_2: COMPETITORS
-- key players
+SECTION_1: MARKET OVERVIEW
+- Current price range (₹/sqft)
+- Market trend (rising / stable / slow)
+- Buyer profile
 
-SECTION_3: PRICING
-Aggressive:
-₹X/sqft
-All-in ₹X Cr
+SECTION_2: COMPETITOR PROJECTS
+Provide 4–6 key projects:
+| Project | Developer | Config | Carpet Size | Price/sqft | Stage |
 
-Balanced:
-₹X/sqft
-All-in ₹X Cr
+SECTION_3: PRODUCT ANALYSIS
+- What configurations are being offered (2BHK/3BHK mix)
+- Typical carpet sizes
+- What is selling fastest
+- What is slow-moving
 
-Premium:
-₹X/sqft
-All-in ₹X Cr
+SECTION_4: PRICING ANALYSIS
+- PSF range in market
+- All-in price range
+- Premium vs budget positioning
 
-SECTION_4: LAUNCH
-- phase pricing
-
-SECTION_5: CONFIG
-- sizes
+SECTION_5: MARKET GAPS
+- What is missing in the market
+- Opportunities for new developer
 
 SECTION_6: RISKS
-- key risks
+- Oversupply risk
+- Pricing pressure
+- Demand mismatch
 
 IMPORTANT:
-use all sections properly
+- Be specific with numbers
+- Focus on competition, not suggestions
 """
 
         client = Groq(api_key=groq_key)
@@ -112,16 +125,21 @@ use all sections properly
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[{"role":"user","content":prompt}],
-            max_tokens=2000
+            max_tokens=2500
         )
 
         result = response.choices[0].message.content
 
-        st.success("Done")
+        st.success("✅ Competition Analysis Ready")
 
         # ── TABS ──
         tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-            "Market","Competitors","Pricing (PSF + All-in)","Launch","Config","Risks"
+            "📊 Market",
+            "🏢 Projects",
+            "🏠 Product",
+            "💰 Pricing",
+            "📈 Gaps",
+            "⚠️ Risks"
         ])
 
         sections = result.split("SECTION_")
@@ -147,4 +165,4 @@ use all sections properly
         with tab6:
             st.markdown(get_section(6))
 
-        st.download_button("Download Report", result)
+        st.download_button("📥 Download Report", result)
