@@ -35,8 +35,8 @@ product_type = st.selectbox("🏢 Product Type", ["Residential", "Commercial"])
 
 st.divider()
 
-groq_key = st.text_input("Groq Key", type="password")
-serp_key = st.text_input("Serp Key", type="password")
+groq_key = st.secrets["GROQ_API_KEY"]
+serp_key = st.secrets["SERP_API_KEY"]
 
 run = st.button("Run Competition Analysis")
 
