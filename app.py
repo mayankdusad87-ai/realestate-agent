@@ -182,8 +182,8 @@ all_competitors = [c for c in competitors if c]
 
 # API keys loaded securely from Streamlit Secrets — not visible to users
 try:
-    groq_key = st.secrets["GROQ_KEY"]
-    serp_key = st.secrets["SERP_KEY"]
+    groq_key = st.secrets["GROQ_API_KEY"]
+    serp_key = st.secrets["SERP_API_KEY"]
 except Exception:
     st.error("⚠️ API keys not configured. Please contact the administrator.")
     st.stop()
