@@ -180,12 +180,13 @@ for i, col in enumerate(comp_row2[:2]):
 
 all_competitors = [c for c in competitors if c]
 
-st.markdown('<div class="section-label">🔑 API Configuration</div>', unsafe_allow_html=True)
-col_a, col_b = st.columns(2)
-with col_a:
-    groq_key = st.text_input("Groq API Key", type="password", placeholder="gsk_...")
-with col_b:
-    serp_key = st.text_input("SerpAPI Key", type="password", placeholder="Your SerpAPI key")
+# API keys loaded securely from Streamlit Secrets — not visible to users
+try:
+    groq_key = st.secrets["GROQ_KEY"]
+    serp_key = st.secrets["SERP_KEY"]
+except Exception:
+    st.error("⚠️ API keys not configured. Please contact the administrator.")
+    st.stop()
 
 st.divider()
 run = st.button("🚀 Run Full Competition Analysis")
