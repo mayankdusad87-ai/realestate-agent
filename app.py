@@ -108,7 +108,7 @@ st.markdown("""
     <div class="header-title">🏗️ Competition Analysis Engine</div>
     <div class="header-sub">
         Your team inputs the market — AI delivers a developer-grade
-        competitor intelligence report &amp; McKinsey-style PPT
+        competitor intelligence report 
     </div>
 </div>
 """, unsafe_allow_html=True)
