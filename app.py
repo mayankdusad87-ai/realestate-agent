@@ -235,15 +235,15 @@ def fetch_live_data(micromarket, city, product_type, all_competitors, serp_key):
 
     queries = [
         # Market pricing
-        f"property price per sqft {micromarket} {city} 2024 2025 {product_type.lower()}",
+        f"property price per sqft {micromarket} {city} 2025 2026 {product_type.lower()}",
         # Active launches
-        f"new residential projects launch {micromarket} {city} 2025",
+        f"new residential projects launch {micromarket} {city} 2026",
         # Market trends
         f"real estate market trend {micromarket} {city} latest",
         # RERA registered projects in micro-market
         f"site:{portal} {micromarket} {city} registered project carpet area",
         # RERA project search fallback
-        f"RERA registered projects {micromarket} {city} carpet area possession date 2024 2025",
+        f"RERA registered projects {micromarket} {city} carpet area possession date 2026 2027",
         # Developer RERA compliance
         f"RERA {city} {micromarket} project registration number possession date delayed",
     ]
@@ -286,8 +286,8 @@ def build_prompt(micromarket, city, product_type, our_project_name, our_land_are
     proj = (our_project_name or "YOUR PROJECT").upper()
 
     return f"""
-You are a senior real estate strategy analyst with deep expertise in Indian property markets.
-Your client is a DEVELOPER who needs a hard-hitting, specific competitor intelligence report.
+You are a senior real estate strategy analyst with deep expertise in Indian real estate markets.
+Your client is a REAL ESTATE DEVELOPER who needs a hard-hitting, specific competitor intelligence report.
 
 DEVELOPER'S PROJECT:
 - Project Name: {our_project_name or 'Unnamed Project'}
