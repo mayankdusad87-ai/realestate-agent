@@ -197,13 +197,61 @@ run = st.button("🚀 Run Full Competition Analysis")
 # ─────────────────────────────────────────────────────────────────────────────
 def fetch_live_data(micromarket, city, product_type, all_competitors, serp_key):
     snippets = []
-    queries  = [
+
+    # Detect state for RERA portal targeting
+    city_to_state = {
+        "mumbai": "maharashtra", "pune": "maharashtra", "thane": "maharashtra",
+        "nagpur": "maharashtra", "nashik": "maharashtra",
+        "bengaluru": "karnataka", "bangalore": "karnataka", "mysuru": "karnataka",
+        "hyderabad": "telangana", "warangal": "telangana",
+        "delhi": "delhi", "noida": "uttar pradesh", "gurgaon": "haryana",
+        "gurugram": "haryana", "faridabad": "haryana",
+        "ahmedabad": "gujarat", "surat": "gujarat", "vadodara": "gujarat",
+        "jaipur": "rajasthan", "jodhpur": "rajasthan",
+        "chennai": "tamil nadu", "coimbatore": "tamil nadu",
+        "kolkata": "west bengal", "bhubaneswar": "odisha",
+        "lucknow": "uttar pradesh", "kanpur": "uttar pradesh",
+        "chandigarh": "punjab", "ludhiana": "punjab",
+        "bhopal": "madhya pradesh", "indore": "madhya pradesh",
+    }
+    state = city_to_state.get(city.lower(), "")
+
+    # RERA portal names per state
+    rera_portal = {
+        "maharashtra": "maharera.mahaonline.gov.in",
+        "karnataka": "rera.karnataka.gov.in",
+        "telangana": "rera.telangana.gov.in",
+        "delhi": "rera.delhi.gov.in",
+        "uttar pradesh": "up-rera.in",
+        "haryana": "haryanarera.gov.in",
+        "gujarat": "gujrera.gujarat.gov.in",
+        "rajasthan": "rera.rajasthan.gov.in",
+        "tamil nadu": "tnrera.in",
+        "west bengal": "hira.wb.gov.in",
+        "punjab": "rera.punjab.gov.in",
+        "madhya pradesh": "rera.mp.gov.in",
+    }
+    portal = rera_portal.get(state, "rera")
+
+    queries = [
+        # Market pricing
         f"property price per sqft {micromarket} {city} 2024 2025 {product_type.lower()}",
+        # Active launches
         f"new residential projects launch {micromarket} {city} 2025",
+        # Market trends
         f"real estate market trend {micromarket} {city} latest",
+        # RERA registered projects in micro-market
+        f"site:{portal} {micromarket} {city} registered project carpet area",
+        # RERA project search fallback
+        f"RERA registered projects {micromarket} {city} carpet area possession date 2024 2025",
+        # Developer RERA compliance
+        f"RERA {city} {micromarket} project registration number possession date delayed",
     ]
+
     for comp in all_competitors[:5]:
         queries.append(f"{comp} {city} price sqft carpet area configurations")
+        # RERA verification for each named competitor
+        queries.append(f"RERA registration {comp} {city} carpet area possession status")
 
     for q in queries:
         try:
