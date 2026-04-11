@@ -254,8 +254,13 @@ DEVELOPER'S PROJECT:
 COMPETITORS IDENTIFIED BY TEAM:
 {comp_list}
 
-LIVE MARKET DATA (fetched today from Google):
+LIVE MARKET DATA (fetched today from Google + RERA portals):
 {live_data[:3500]}
+
+IMPORTANT: The live data above includes RERA portal information where available.
+When you find RERA registration numbers, carpet areas, possession dates, or
+registration status — treat these as VERIFIED FACTS and highlight them clearly
+in your analysis. RERA data is more reliable than portal listings.
 
 RULES:
 - Use live data as PRIMARY source; fill gaps with your knowledge of Indian RE markets.
