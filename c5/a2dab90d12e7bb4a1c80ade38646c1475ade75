@@ -1,0 +1,39 @@
+CLAUDE.md
+  f3692a0a9c579e71 1-48
+ppt/generator.py
+  f3692a0a9c579e71 1-345
+style.css
+  f3692a0a9c579e71 1-68
+app.py
+  f3692a0a9c579e71 1-206
+ppt/theme.py
+  f3692a0a9c579e71 1-18
+config.py
+  f3692a0a9c579e71 1-73
+ppt/helpers.py
+  f3692a0a9c579e71 1-108
+data_fetcher.py
+  f3692a0a9c579e71 1-87
+prompt_builder.py
+  f3692a0a9c579e71 1-128
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "c5a2dab90d12e7bb4a1c80ade38646c1475ade75",
+  "prompts": {
+    "f3692a0a9c579e71": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b4f68188-25f9-4dec-96b3-b0388aef02cc",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "utsavdusad",
+      "messages": [],
+      "total_additions": 961,
+      "total_deletions": 661,
+      "accepted_lines": 1081,
+      "overriden_lines": 0
+    }
+  }
+}
