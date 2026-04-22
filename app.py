@@ -2,14 +2,20 @@
 Real Estate Competition Analysis Engine
 Streamlit UI layer — all business logic lives in dedicated modules.
 """
+import logging
+import time
 from pathlib import Path
 
 import streamlit as st
 from groq import Groq
 
+logger = logging.getLogger(__name__)
+
 from config import (
+    GROQ_MAX_RETRIES,
     GROQ_MAX_TOKENS,
     GROQ_MODEL,
+    GROQ_RETRY_DELAY_SECONDS,
     LAUNCH_TIMELINES,
     LIVE_DATA_DISPLAY_LIMIT,
     PRODUCT_TYPES,
@@ -130,7 +136,7 @@ if run:
             if all_competitors:
                 st.write(f"Searching named competitors: {', '.join(all_competitors)}...")
             st.write("Searching active project launches and market trends...")
-            live_data = fetch_live_data(micromarket, city, product_type, all_competitors, serp_key)
+            live_data = fetch_live_data(micromarket, city, product_type, tuple(all_competitors), serp_key)
             status.update(label="\u2705 Live data fetched!", state="complete")
 
         with st.expander("\U0001f4c4 View raw data fetched from web"):
@@ -146,15 +152,29 @@ if run:
                 all_competitors, live_data,
             )
             client = Groq(api_key=groq_key)
-            response = client.chat.completions.create(
-                model=GROQ_MODEL,
-                messages=[{"role": "user", "content": prompt}],
-                max_tokens=GROQ_MAX_TOKENS,
-            )
-            result = response.choices[0].message.content
+            result = None
+            for attempt in range(1, GROQ_MAX_RETRIES + 1):
+                try:
+                    response = client.chat.completions.create(
+                        model=GROQ_MODEL,
+                        messages=[{"role": "user", "content": prompt}],
+                        max_tokens=GROQ_MAX_TOKENS,
+                    )
+                    result = response.choices[0].message.content
+                    break
+                except Exception as e:
+                    logger.warning("Groq API attempt %d failed: %s", attempt, e)
+                    if attempt < GROQ_MAX_RETRIES:
+                        st.write(f"API call failed, retrying ({attempt}/{GROQ_MAX_RETRIES})...")
+                        time.sleep(GROQ_RETRY_DELAY_SECONDS)
+                    else:
+                        st.error(f"\u26a0\ufe0f AI analysis failed after {GROQ_MAX_RETRIES} attempts: {e}")
+                        st.stop()
             status.update(label="\u2705 Analysis complete!", state="complete")
 
         sections_dict = parse_sections(result)
+        if not sections_dict:
+            st.warning("\u26a0\ufe0f AI returned an unexpected format. Some sections may be missing. Try re-running.")
 
         proj_label = our_project_name or micromarket
         st.success(f"\U0001f389 Competition Analysis for **{proj_label}** is ready!")

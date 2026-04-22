@@ -1,9 +1,12 @@
 """
 Live market data fetching via SerpAPI.
 """
-from typing import Optional
+import logging
 
 import requests
+import streamlit as st
+
+logger = logging.getLogger(__name__)
 
 from config import (
     CITY_TO_STATE,
@@ -67,17 +70,18 @@ def _fetch_snippets(queries: list[str], serp_key: str) -> list[str]:
     return snippets
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_live_data(
     micromarket: str,
     city: str,
     product_type: str,
-    competitors: list[str],
+    competitors: tuple[str, ...],
     serp_key: str,
 ) -> str:
     state = CITY_TO_STATE.get(city.lower(), "")
     portal = RERA_PORTALS.get(state, "rera")
 
-    queries = _build_queries(micromarket, city, product_type, competitors, portal)
+    queries = _build_queries(micromarket, city, product_type, list(competitors), portal)
     snippets = _fetch_snippets(queries, serp_key)
 
     return (
