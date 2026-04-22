@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+html, body, [class*="css"] { font-family: 'Inter', sans-serif; }
+.stApp { background-color: #0D1117; color: #E6EDF3; }
+.main .block-container { padding: 2rem 3rem; max-width: 1400px; }
+.header-wrap {
+    background: linear-gradient(135deg, #161B22 0%, #1C2333 100%);
+    border: 1px solid #30363D; border-radius: 16px;
+    padding: 2rem 2.5rem; margin-bottom: 2rem;
+}
+.header-badge {
+    display: inline-block; background: rgba(184,134,11,0.15);
+    border: 1px solid rgba(184,134,11,0.4); color: #D4A017;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; padding: 4px 12px;
+    border-radius: 20px; margin-bottom: 12px;
+}
+.header-title { font-size: 36px; font-weight: 700; color: #FFFFFF; margin: 0 0 8px 0; letter-spacing: -0.5px; }
+.header-sub { font-size: 15px; color: #8B949E; margin: 8px 0 0 0; }
+.section-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #D4A017;
+    margin-bottom: 0.6rem; margin-top: 1.5rem;
+}
+.stTextInput > div > div > input,
+.stSelectbox > div > div,
+.stTextArea textarea {
+    background-color: #0D1117 !important; border: 1px solid #30363D !important;
+    border-radius: 8px !important; color: #E6EDF3 !important;
+    font-family: 'Inter', sans-serif !important;
+}
+.stTextInput > div > div > input:focus { border-color: #B8860B !important; }
+label { color: #8B949E !important; font-size: 13px !important; font-weight: 500 !important; }
+.stButton > button {
+    background: #B8860B !important; color: #FFFFFF !important; border: none !important;
+    border-radius: 10px !important; padding: 14px 36px !important;
+    font-size: 15px !important; font-weight: 600 !important; width: 100% !important;
+    letter-spacing: 0.02em !important; transition: all 0.2s !important;
+}
+.stButton > button:hover { background: #D4A017 !important; transform: translateY(-1px) !important; }
+.stTabs [data-baseweb="tab-list"] {
+    background: #161B22; border-radius: 10px; padding: 4px;
+    border: 1px solid #30363D; gap: 4px;
+}
+.stTabs [data-baseweb="tab"] {
+    background: transparent; border-radius: 8px; color: #8B949E;
+    font-size: 13px; font-weight: 500; padding: 8px 16px;
+}
+.stTabs [aria-selected="true"] { background: #B8860B !important; color: #FFFFFF !important; }
+.stTabs [data-baseweb="tab-panel"] {
+    background: #161B22; border: 1px solid #30363D;
+    border-radius: 0 12px 12px 12px; padding: 2rem; margin-top: -1px;
+}
+.stAlert { border-radius: 10px !important; border: none !important; }
+hr { border-color: #21262D !important; }
+.stDownloadButton > button {
+    background: transparent !important; border: 1px solid #B8860B !important;
+    color: #D4A017 !important; border-radius: 8px !important;
+    font-weight: 500 !important; width: 100% !important;
+}
+.stDownloadButton > button:hover { background: rgba(184,134,11,0.1) !important; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+    background: #1C2333; color: #D4A017; font-weight: 600;
+    padding: 10px 14px; text-align: left; border-bottom: 2px solid #B8860B;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+}
+td { padding: 10px 14px; border-bottom: 1px solid #21262D; color: #E6EDF3; vertical-align: top; }
+tr:hover td { background: rgba(184,134,11,0.05); }
