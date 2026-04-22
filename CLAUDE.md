@@ -9,11 +9,20 @@ A Streamlit-based real estate competition analysis tool for the Indian market. U
 ## Running the App
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 streamlit run app.py
 ```
 
-API keys (`GROQ_API_KEY`, `SERP_API_KEY`) must be configured in Streamlit secrets (`.streamlit/secrets.toml`), not environment variables. The app reads them via `st.secrets`.
+API keys (`GROQ_API_KEY`, `SERP_API_KEY`) must be configured in `.streamlit/secrets.toml` (see `secrets.toml.example`). The app reads them via `st.secrets`.
+
+## Running Tests
+
+```bash
+pip install pytest
+pytest tests/ -v
+```
 
 ## Architecture
 
@@ -27,6 +36,8 @@ ppt/
   theme.py          → Color palette (RGBColor constants)
   helpers.py        → Low-level shape/text primitives (add_rectangle, add_textbox, etc.)
   generator.py      → 9-slide deck builder using helpers + theme
+tests/
+  test_prompt_builder.py → Tests for parse_sections() contract
 ```
 
 **Data flow:** `app.py` collects user input → `data_fetcher.fetch_live_data()` queries SerpAPI → `prompt_builder.build_prompt()` constructs the LLM prompt → Groq API call → `prompt_builder.parse_sections()` splits response into dict → tabs display sections → `ppt.generator.generate_ppt()` builds downloadable deck.
@@ -37,12 +48,14 @@ ppt/
 - **PPT is pixel-positioned**: All slide elements use absolute `Inches()` coordinates. Changing slide dimensions (currently 10x7.5) requires updating every position constant across `ppt/generator.py`.
 - **RERA portal targeting**: `data_fetcher` maps cities to state RERA portal domains (via `config.CITY_TO_STATE` and `config.RERA_PORTALS`) for `site:` queries, improving regulatory data quality.
 - **Config centralization**: Model name, API params, max tokens, and geographic mappings all live in `config.py` to avoid scattered magic values.
+- **SerpAPI caching**: `fetch_live_data()` uses `@st.cache_data` with a 1-hour TTL to avoid redundant API calls on reruns.
+- **Groq retry**: The Groq API call retries up to `GROQ_MAX_RETRIES` times with a delay before failing, and warns when `parse_sections()` returns no sections.
 
 ## Dependencies
+
+Pinned in `requirements.txt`:
 
 - `streamlit` — UI framework
 - `groq` — LLM API client (uses LLaMA 3.3 70B via Groq)
 - `requests` — SerpAPI HTTP calls
 - `python-pptx` + `lxml` — PowerPoint generation with low-level XML manipulation for cell backgrounds
-
-Note: `requirements.py` is a partial duplicate of `requirements.txt` (only lists `streamlit` and `groq`). The canonical dependency file is `requirements.txt`.
