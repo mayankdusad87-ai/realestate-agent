@@ -3,3 +3,7 @@ groq==1.2.0
 requests==2.33.1
 python-pptx==1.0.2
 lxml==6.1.0
+openpyxl==3.1.5
+APScheduler==3.10.4
+gspread==6.1.4
+google-auth==2.38.0
