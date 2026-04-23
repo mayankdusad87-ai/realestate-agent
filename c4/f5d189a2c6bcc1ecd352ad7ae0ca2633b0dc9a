@@ -1,0 +1,64 @@
+tests/test_sheets.py
+  07b87d8afc1a988d 1-103
+tests/test_scheduler.py
+  07b87d8afc1a988d 1-100
+tests/test_whatsapp.py
+  07b87d8afc1a988d 1-153
+agents/base.py
+  07b87d8afc1a988d 1-156
+integrations/whatsapp.py
+  07b87d8afc1a988d 1-157
+integrations/__init__.py
+  07b87d8afc1a988d 1
+.streamlit/secrets.toml.example
+  07b87d8afc1a988d 3-13
+config.py
+  07b87d8afc1a988d 76-109
+integrations/scheduler.py
+  07b87d8afc1a988d 1-106
+integrations/sheets.py
+  07b87d8afc1a988d 1-115
+integrations/email.py
+  07b87d8afc1a988d 1-124
+tests/test_base_agent.py
+  07b87d8afc1a988d 1-187
+agents/__init__.py
+  07b87d8afc1a988d 1-4
+requirements.txt
+  07b87d8afc1a988d 6-9
+tests/test_email.py
+  07b87d8afc1a988d 1-173
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.3.2",
+  "base_commit_sha": "c4f5d189a2c6bcc1ecd352ad7ae0ca2633b0dc9a",
+  "prompts": {
+    "07b87d8afc1a988d": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "5be8254a-4a14-4eec-b832-a50b8cd48eeb",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "utsavdusad",
+      "messages": [],
+      "total_additions": 1435,
+      "total_deletions": 5,
+      "accepted_lines": 1430,
+      "overriden_lines": 0
+    },
+    "2a0d5afb30b082b4": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "35ac0707-13a4-409b-98e5-1d6479bde647",
+        "model": "claude-opus-4-6"
+      },
+      "human_author": "utsavdusad",
+      "messages": [],
+      "total_additions": 0,
+      "total_deletions": 0,
+      "accepted_lines": 0,
+      "overriden_lines": 0
+    }
+  }
+}
