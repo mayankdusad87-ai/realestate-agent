@@ -73,3 +73,37 @@ RERA_PORTALS = {
     "punjab": "rera.punjab.gov.in",
     "madhya pradesh": "rera.mp.gov.in",
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AGENT REGISTRY
+# ─────────────────────────────────────────────────────────────────────────────
+AGENT_NAMES = {
+    1: "Daily Command Brief",
+    2: "Collections Chase Agent",
+    3: "RERA Compliance Agent",
+    4: "Broker Performance Agent",
+    5: "Construction Progress Summariser",
+    6: "Buyer Experience Agent",
+    7: "Competitive Intelligence Agent",
+    8: "Cash Flow Risk Agent",
+    9: "Sales Team Performance Agent",
+    10: "Channel Partner Performance Agent",
+}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# WHATSAPP BUSINESS API (Meta Cloud API)
+# ─────────────────────────────────────────────────────────────────────────────
+WHATSAPP_API_URL = "https://graph.facebook.com/v21.0"
+WHATSAPP_API_TIMEOUT = 15
+
+# ─────────────────────────────────────────────────────────────────────────────
+# EMAIL (SMTP)
+# ─────────────────────────────────────────────────────────────────────────────
+SMTP_HOST = "smtp.gmail.com"
+SMTP_PORT = 587
+SMTP_USE_TLS = True
+
+# ─────────────────────────────────────────────────────────────────────────────
+# GOOGLE SHEETS
+# ─────────────────────────────────────────────────────────────────────────────
+GOOGLE_CREDENTIALS_PATH = ""  # Path to service-account JSON; set via secrets
