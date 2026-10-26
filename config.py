@@ -3,7 +3,8 @@ Configuration constants for the Real Estate Competition Analysis Engine.
 """
 
 GROQ_MODEL = "openai/gpt-oss-120b"
-GROQ_MAX_TOKENS = 4000
+GROQ_MAX_TOKENS = 8000          # higher so the JSON payload is not truncated mid-section
+GROQ_TEMPERATURE = 0            # deterministic: we want grounded extraction, not creative prose
 GROQ_MAX_RETRIES = 2
 GROQ_RETRY_DELAY_SECONDS = 3
 
@@ -13,8 +14,18 @@ SERPAPI_COUNTRY = "in"
 SERPAPI_LANGUAGE = "en"
 SERPAPI_TIMEOUT = 12
 
-LIVE_DATA_SNIPPET_LIMIT = 3500
-LIVE_DATA_DISPLAY_LIMIT = 2500
+# Fetching the actual pages behind the top results (not just Google snippets).
+PAGE_FETCH_ENABLED = True
+MAX_PAGES_TO_FETCH = 8          # unique URLs fetched across all queries (bounds runtime)
+PAGE_FETCH_TIMEOUT = 8          # seconds per page
+PAGE_TEXT_CHAR_LIMIT = 1800     # chars of extracted text kept per page
+PAGE_FETCH_USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
+)
+
+LIVE_DATA_SNIPPET_LIMIT = 14000  # char budget for the sources block passed to the LLM
+LIVE_DATA_DISPLAY_LIMIT = 6000   # char budget for the "raw data" expander in the UI
 MAX_COMPETITORS = 5
 
 PRODUCT_TYPES = ["Residential", "Commercial", "Mixed-use", "Plots", "Warehousing"]

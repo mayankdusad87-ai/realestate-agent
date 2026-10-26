@@ -16,13 +16,14 @@ from config import (
     GROQ_MAX_TOKENS,
     GROQ_MODEL,
     GROQ_RETRY_DELAY_SECONDS,
+    GROQ_TEMPERATURE,
     LAUNCH_TIMELINES,
     LIVE_DATA_DISPLAY_LIMIT,
     PRODUCT_TYPES,
 )
 from data_fetcher import fetch_live_data
 from ppt.generator import generate_ppt
-from prompt_builder import build_prompt, parse_sections
+from prompt_builder import build_prompt, parse_response, sections_to_text
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE CONFIG  (must be first Streamlit call)
@@ -136,11 +137,33 @@ if run:
             if all_competitors:
                 st.write(f"Searching named competitors: {', '.join(all_competitors)}...")
             st.write("Searching active project launches and market trends...")
-            live_data = fetch_live_data(micromarket, city, product_type, tuple(all_competitors), serp_key)
-            status.update(label="\u2705 Live data fetched!", state="complete")
+            live = fetch_live_data(micromarket, city, product_type, tuple(all_competitors), serp_key)
+            stats = live["stats"]
+            st.write(
+                f"Queries run: {stats['queries']} \u00b7 sources found: {stats['sources']} "
+                f"\u00b7 pages read: {stats['pages_fetched']}"
+            )
+            if live["live_ok"]:
+                status.update(label="\u2705 Live data fetched!", state="complete")
+            else:
+                status.update(label="\u26a0\ufe0f No live data retrieved", state="error")
+
+        live_data = live["text"]
+
+        if live["errors"]:
+            st.error(
+                "\u26a0\ufe0f The web search reported problems, so results may be incomplete: "
+                + "; ".join(live["errors"])
+            )
+        if not live["live_ok"]:
+            st.warning(
+                "\u26a0\ufe0f No live sources were retrieved (check the SerpAPI key/quota). "
+                "The report below is **not grounded in live data** \u2014 the AI will mark "
+                "data-dependent figures as unknown. Treat everything as unverified."
+            )
 
         with st.expander("\U0001f4c4 View raw data fetched from web"):
-            st.text(live_data[:LIVE_DATA_DISPLAY_LIMIT])
+            st.text(live_data[:LIVE_DATA_DISPLAY_LIMIT] if live_data else "No live data.")
 
         with st.status("\U0001f916 AI generating competition analysis...", expanded=True) as status:
             st.write("Running competitor intelligence analysis...")
@@ -159,6 +182,8 @@ if run:
                         model=GROQ_MODEL,
                         messages=[{"role": "user", "content": prompt}],
                         max_tokens=GROQ_MAX_TOKENS,
+                        temperature=GROQ_TEMPERATURE,
+                        response_format={"type": "json_object"},
                     )
                     result = response.choices[0].message.content
                     break
@@ -172,9 +197,14 @@ if run:
                         st.stop()
             status.update(label="\u2705 Analysis complete!", state="complete")
 
-        sections_dict = parse_sections(result)
+        sections_dict = parse_response(result)
         if not sections_dict:
             st.warning("\u26a0\ufe0f AI returned an unexpected format. Some sections may be missing. Try re-running.")
+        elif len(sections_dict) < 6:
+            missing = [n for n in ("1", "2", "3", "4", "5", "6") if n not in sections_dict]
+            st.warning(f"\u26a0\ufe0f Sections {', '.join(missing)} were not generated. Try re-running.")
+
+        report_text = sections_to_text(sections_dict) or (result or "")
 
         proj_label = our_project_name or micromarket
         st.success(f"\U0001f389 Competition Analysis for **{proj_label}** is ready!")
@@ -220,7 +250,7 @@ if run:
         with col_dl2:
             st.download_button(
                 label="\U0001f4c4 Download Full Report (TXT)",
-                data=result,
+                data=report_text,
                 file_name=f"{safe}_Competition_Analysis.txt",
                 mime="text/plain",
             )
