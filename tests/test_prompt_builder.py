@@ -139,6 +139,23 @@ def test_parse_response_empty():
     assert parse_response("") == {}
 
 
+def test_parse_response_normalizes_escaped_newlines():
+    # model double-escapes newlines: the section value carries literal backslash-n
+    raw = json.dumps({"section_2": "**A** - dev\\n- Config: 2BHK\\n- Stage: UC"})
+    res = parse_response(raw)
+    assert "\\n" not in res["2"]          # literal escape gone
+    assert "\n- Config: 2BHK" in res["2"]  # real line breaks present
+
+
+def test_escaped_table_is_extractable_after_parse():
+    raw = json.dumps(
+        {"section_3": "| Project | Basis |\\n|---|---|\\n| Lodha X | S3 |\\n| Godrej Y | S4 |"}
+    )
+    res = parse_response(raw)
+    rows = extract_table_rows(res["3"])
+    assert [r["project"] for r in rows] == ["Lodha X", "Godrej Y"]
+
+
 def test_sections_to_text_roundtrip():
     sections = {"1": "alpha", "3": "gamma"}
     text = sections_to_text(sections)

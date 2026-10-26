@@ -123,7 +123,9 @@ OUTPUT: Return a SINGLE JSON object and nothing else. No markdown fences, no com
 Use EXACTLY these keys, each mapping to a markdown string:
   "section_1", "section_2", "section_3", "section_4", "section_5", "section_6"
 
-Write the markdown INSIDE each string using the structure below.
+Write the markdown INSIDE each string using the structure below. Use REAL line
+breaks between bullets and table rows (an actual newline in the JSON string), not
+the literal two characters backslash-n.
 
 section_1 (MARKET SNAPSHOT):
 - Avg INR/sqft range: <range> (carpet, {micromarket}) <tag>
@@ -184,10 +186,29 @@ def _strip_code_fence(text: str) -> str:
     return t.strip()
 
 
+def _normalize_md(s: str) -> str:
+    """
+    Turn escaped whitespace into real whitespace. Some models (e.g. gpt-oss) emit
+    double-escaped newlines in their JSON, so after json.loads the section strings
+    still contain literal "\\n" / "\\t" instead of real breaks - which renders bullets
+    and tables as one run-on line and stops the table parser from seeing rows.
+    """
+    if not s:
+        return ""
+    return (
+        s.replace("\\r\\n", "\n")
+        .replace("\\n", "\n")
+        .replace("\\t", "\t")
+        .replace("\r\n", "\n")
+        .strip()
+    )
+
+
 def parse_response(raw: str) -> dict[str, str]:
     """
     Primary parser: expect a JSON object with section_1..section_6 keys and map to
     {"1": ..., "6": ...}. Falls back to marker-based parse_sections() if JSON fails.
+    Section strings are normalized so escaped newlines render as real line breaks.
     """
     if not raw:
         return {}
@@ -199,12 +220,12 @@ def parse_response(raw: str) -> dict[str, str]:
             for n in ("1", "2", "3", "4", "5", "6"):
                 val = data.get(f"section_{n}")
                 if isinstance(val, str) and val.strip():
-                    out[n] = val.strip()
+                    out[n] = _normalize_md(val)
             if out:
                 return out
     except (json.JSONDecodeError, TypeError):
         pass
-    return parse_sections(raw)
+    return {k: _normalize_md(v) for k, v in parse_sections(raw).items()}
 
 
 def parse_sections(raw_result: str) -> dict[str, str]:

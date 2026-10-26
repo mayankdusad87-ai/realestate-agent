@@ -293,7 +293,20 @@ if run:
         with tab2:
             st.markdown(_show("2"))
         with tab3:
-            st.markdown(_show("3"))
+            _cmp_rows = extract_table_rows(sections_dict.get("3", ""))
+            if _cmp_rows:
+                _cols = {
+                    "project": "Project", "developer": "Developer", "config": "Config",
+                    "carpet": "Carpet (sqft)", "price_sqft": "₹/sqft", "all_in": "All-in",
+                    "stage": "Stage", "basis": "Basis",
+                }
+                st.dataframe(
+                    [{label: r.get(key, "") for key, label in _cols.items()} for r in _cmp_rows],
+                    use_container_width=True,
+                    hide_index=True,
+                )
+            else:
+                st.markdown(_show("3"))
         with tab4:
             st.markdown(_show("4"))
         with tab5:
