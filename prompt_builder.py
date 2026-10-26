@@ -7,6 +7,7 @@ Output is requested as a strict JSON object so sections can never be silently
 dropped by brittle text splitting; a marker-based parser is kept as a fallback.
 """
 import json
+import re
 
 from config import LIVE_DATA_SNIPPET_LIMIT
 
@@ -32,6 +33,8 @@ def build_prompt(
     our_strengths: str,
     all_competitors: list[str],
     live_data: str,
+    memory_data: str = "",
+    corrections_data: str = "",
 ) -> str:
     comp_list = (
         ", ".join(all_competitors)
@@ -53,6 +56,26 @@ def build_prompt(
         else "NO LIVE SOURCES WERE RETRIEVED."
     )
 
+    memory_block = (
+        f"""
+REMEMBERED VERIFIED FACTS (carried over from prior runs in this city; each line
+is tagged [MEM] and may be dated):
+{memory_data}
+"""
+        if memory_data
+        else ""
+    )
+
+    corrections_block = (
+        f"""
+TEAM CORRECTIONS (AUTHORITATIVE - these override SOURCES, remembered facts, and
+your own knowledge; use them verbatim and tag the figure [verified: correction]):
+{corrections_data}
+"""
+        if corrections_data
+        else ""
+    )
+
     return f"""
 You are a senior real estate strategy analyst for an Indian real estate DEVELOPER.
 You write grounded, auditable competitor intelligence - not marketing prose.
@@ -72,7 +95,7 @@ COMPETITORS NAMED BY TEAM:
 
 SOURCES (retrieved today from Google results and the pages behind them; each is tagged [S1], [S2], ...):
 {sources_block}
-
+{memory_block}{corrections_block}
 GROUNDING RULES - follow exactly:
 1. Base every factual figure (prices, carpet areas, RERA numbers, possession dates,
    inventory, YoY growth) ONLY on the SOURCES above.
@@ -90,6 +113,11 @@ GROUNDING RULES - follow exactly:
    but the facts they rest on do.
 6. If SOURCES is "NO LIVE SOURCES WERE RETRIEVED", say so plainly in SECTION_1, mark the
    data-dependent figures "[unknown]", and keep only source-free strategic reasoning.
+7. REMEMBERED VERIFIED FACTS come from earlier verified runs. Treat a [MEM] figure as
+   "[verified: memory]" UNLESS a current SOURCE contradicts it - then prefer the SOURCE and
+   note the change in one line. Never downgrade a remembered figure to a fabricated one.
+8. TEAM CORRECTIONS are authoritative and final. Where a correction applies, use its value
+   exactly, tag it "[verified: correction]", and ignore any SOURCE or memory that disagrees.
 
 OUTPUT: Return a SINGLE JSON object and nothing else. No markdown fences, no commentary.
 Use EXACTLY these keys, each mapping to a markdown string:
@@ -186,6 +214,79 @@ def parse_sections(raw_result: str) -> dict[str, str]:
             num = sec.split(":")[0].strip()
             sections[num] = ":".join(sec.split(":")[1:]).strip()
     return sections
+
+
+def _find_col(headers: list[str], *needles: str) -> int | None:
+    for i, h in enumerate(headers):
+        if any(n in h for n in needles):
+            return i
+    return None
+
+
+def extract_table_rows(section3: str) -> list[dict]:
+    """
+    Parse the SECTION_3 markdown comparison table into row dicts with keys:
+    project, developer, config, carpet, price_sqft, all_in, stage, basis.
+    Returns [] if no usable table is found.
+    """
+    if not section3:
+        return []
+
+    grid = []
+    for line in section3.splitlines():
+        s = line.strip()
+        if not s.startswith("|"):
+            continue
+        cells = [c.strip() for c in s.strip("|").split("|")]
+        # skip markdown separator rows like |---|---|
+        if cells and all(set(c) <= set("-: ") for c in cells):
+            continue
+        grid.append(cells)
+
+    if len(grid) < 2:
+        return []
+
+    headers = [h.lower() for h in grid[0]]
+    idx = {
+        "project": _find_col(headers, "project"),
+        "developer": _find_col(headers, "developer"),
+        "config": _find_col(headers, "config"),
+        "carpet": _find_col(headers, "carpet"),
+        "price_sqft": _find_col(headers, "/sqft", "₹/sqft", "per sqft", "price"),
+        "all_in": _find_col(headers, "all-in", "all in", "all‑in"),
+        "stage": _find_col(headers, "stage"),
+        "basis": _find_col(headers, "basis", "source"),
+    }
+    if idx["project"] is None:
+        return []
+
+    rows = []
+    for cells in grid[1:]:
+        def get(field):
+            i = idx[field]
+            return cells[i] if i is not None and i < len(cells) else ""
+
+        project = get("project")
+        if not project or project.lower() in ("project", "unknown", "-", "tbd"):
+            continue
+        rows.append(
+            {
+                "project": project,
+                "developer": get("developer"),
+                "config": get("config"),
+                "carpet": get("carpet"),
+                "price_sqft": get("price_sqft"),
+                "all_in": get("all_in"),
+                "stage": get("stage"),
+                "basis": get("basis"),
+            }
+        )
+    return rows
+
+
+def verified_rows(rows: list[dict]) -> list[dict]:
+    """Keep only rows whose Basis cites a real source id (e.g. S3), i.e. verified."""
+    return [r for r in rows if re.search(r"\bS\d", r.get("basis", ""))]
 
 
 def sections_to_text(sections: dict[str, str]) -> str:

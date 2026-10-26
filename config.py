@@ -1,6 +1,11 @@
 """
 Configuration constants for the Real Estate Competition Analysis Engine.
 """
+from pathlib import Path
+
+# Phase 1 fact memory (SQLite). Local file next to the app; override the env-style
+# constant to point at durable storage on an ephemeral host (see memory_store.py).
+MEMORY_DB_PATH = str(Path(__file__).parent / "re_memory.db")
 
 GROQ_MODEL = "openai/gpt-oss-120b"
 GROQ_MAX_TOKENS = 8000          # higher so the JSON payload is not truncated mid-section

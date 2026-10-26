@@ -21,9 +21,18 @@ from config import (
     LIVE_DATA_DISPLAY_LIMIT,
     PRODUCT_TYPES,
 )
+import memory_store
 from data_fetcher import fetch_live_data
 from ppt.generator import generate_ppt
-from prompt_builder import build_prompt, parse_response, sections_to_text
+from prompt_builder import (
+    build_prompt,
+    extract_table_rows,
+    parse_response,
+    sections_to_text,
+    verified_rows,
+)
+
+memory_store.init_db()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PAGE CONFIG  (must be first Streamlit call)
@@ -122,6 +131,44 @@ except Exception:
     st.error("\u26a0\ufe0f API keys not configured. Please contact the administrator.")
     st.stop()
 
+# ─────────────────────────────────────────────────────────────────────────────
+# SIDEBAR — FACT MEMORY (Phase 1)
+# ─────────────────────────────────────────────────────────────────────────────
+with st.sidebar:
+    st.markdown("### \U0001f9e0 Fact Memory")
+    if city:
+        remembered = memory_store.recall_projects(city)
+        st.caption(f"{len(remembered)} remembered project(s) for **{city.title()}**")
+        for p in remembered[:15]:
+            price = p["price_sqft"] or "?"
+            stage = p["stage"] or "?"
+            st.markdown(f"- **{p['project']}** — {price} · {stage}")
+
+        active = memory_store.recall_corrections(city)
+        if active:
+            st.markdown("**Active corrections (authoritative):**")
+            for c in active:
+                cols = st.columns([5, 1])
+                cols[0].markdown(f"- {c['subject']} / {c['field']} → **{c['value']}**")
+                if cols[1].button("✕", key=f"del_corr_{c['id']}", help="Remove"):
+                    memory_store.delete_correction(c["id"])
+                    st.rerun()
+
+        with st.form("add_correction", clear_on_submit=True):
+            st.markdown("**Add a correction**")
+            c_subject = st.text_input("Subject (project or 'market')")
+            c_field = st.text_input("Field (e.g. ₹/sqft, carpet, RERA)")
+            c_value = st.text_input("Correct value")
+            c_note = st.text_input("Note (optional)")
+            if st.form_submit_button("Save correction"):
+                if c_subject and c_field and c_value:
+                    memory_store.add_correction(city, c_subject, c_field, c_value, c_note)
+                    st.success("Saved — it will override future reports for this city.")
+                else:
+                    st.warning("Subject, field and value are all required.")
+    else:
+        st.caption("Enter a City above to see and edit its memory.")
+
 st.divider()
 run = st.button("\U0001f680 Run Full Competition Analysis")
 
@@ -165,6 +212,13 @@ if run:
         with st.expander("\U0001f4c4 View raw data fetched from web"):
             st.text(live_data[:LIVE_DATA_DISPLAY_LIMIT] if live_data else "No live data.")
 
+        memory_data, corrections_data = memory_store.format_memory_block(city)
+        if memory_data:
+            n_mem = len(memory_data.strip().splitlines())
+            st.caption(f"\U0001f9e0 Grounding in {n_mem} remembered fact(s) from prior runs in {city}.")
+        if corrections_data:
+            st.caption("\U0001f4cc Applying your saved team corrections (authoritative).")
+
         with st.status("\U0001f916 AI generating competition analysis...", expanded=True) as status:
             st.write("Running competitor intelligence analysis...")
             st.write("Building pricing strategy and gap analysis...")
@@ -173,6 +227,8 @@ if run:
                 our_project_name, our_land_area, our_target_segment,
                 our_configs, our_launch_timeline, our_strengths,
                 all_competitors, live_data,
+                memory_data=memory_data,
+                corrections_data=corrections_data,
             )
             client = Groq(api_key=groq_key)
             result = None
@@ -205,6 +261,20 @@ if run:
             st.warning(f"\u26a0\ufe0f Sections {', '.join(missing)} were not generated. Try re-running.")
 
         report_text = sections_to_text(sections_dict) or (result or "")
+
+        # Phase 1: remember the verified competitor rows so future runs build on them.
+        try:
+            table_rows = extract_table_rows(sections_dict.get("3", ""))
+            to_store = verified_rows(table_rows)
+            if to_store:
+                stored = memory_store.remember_projects(city, to_store)
+                if stored:
+                    st.caption(
+                        f"\U0001f9e0 Saved {stored} verified project(s) to memory for {city} — "
+                        "future runs will build on these."
+                    )
+        except Exception as e:  # memory must never break the report
+            logger.warning("Memory write failed: %s", e)
 
         proj_label = our_project_name or micromarket
         st.success(f"\U0001f389 Competition Analysis for **{proj_label}** is ready!")

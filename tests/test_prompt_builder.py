@@ -4,7 +4,49 @@ the fragile contract between LLM output format and the parser.
 """
 import json
 
-from prompt_builder import parse_response, parse_sections, sections_to_text
+from prompt_builder import (
+    extract_table_rows,
+    parse_response,
+    parse_sections,
+    sections_to_text,
+    verified_rows,
+)
+
+
+# ── extract_table_rows / verified_rows (Phase 1) ─────────────────────────────
+
+_TABLE = (
+    "| Project | Developer | Config | Carpet (sqft) | INR/sqft | All-in Price | Stage | Basis |\n"
+    "|---|---|---|---|---|---|---|---|\n"
+    "| Lodha X | Lodha | 2BHK | 650 | ₹25,000 | ₹1.6 Cr | UC | S3 |\n"
+    "| Godrej Y | Godrej | 3BHK | 900 | ₹22,000 | ₹2.0 Cr | Ready | estimated |\n"
+    "| unknown | | | | | | | |\n"
+)
+
+
+def test_extract_table_rows_maps_columns():
+    rows = extract_table_rows(_TABLE)
+    assert len(rows) == 2  # placeholder 'unknown' row dropped
+    first = rows[0]
+    assert first["project"] == "Lodha X"
+    assert first["developer"] == "Lodha"
+    assert first["carpet"] == "650"
+    assert first["price_sqft"] == "₹25,000"
+    assert first["all_in"] == "₹1.6 Cr"
+    assert first["stage"] == "UC"
+    assert first["basis"] == "S3"
+
+
+def test_verified_rows_keeps_only_sourced():
+    rows = extract_table_rows(_TABLE)
+    v = verified_rows(rows)
+    assert len(v) == 1
+    assert v[0]["project"] == "Lodha X"
+
+
+def test_extract_table_rows_no_table():
+    assert extract_table_rows("No table here, just prose.") == []
+    assert extract_table_rows("") == []
 
 
 def test_parse_sections_standard_output():
