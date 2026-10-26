@@ -2,7 +2,9 @@
 Tests for prompt_builder module — focused on parse_sections,
 the fragile contract between LLM output format and the parser.
 """
-from prompt_builder import parse_sections
+import json
+
+from prompt_builder import parse_response, parse_sections, sections_to_text
 
 
 def test_parse_sections_standard_output():
@@ -59,3 +61,47 @@ def test_parse_sections_handles_extra_whitespace():
     raw = "SECTION_1 :  MARKET SNAPSHOT \n  Some data  "
     result = parse_sections(raw)
     assert "1" in result
+
+
+# ── parse_response (JSON-first, marker fallback) ─────────────────────────────
+
+def test_parse_response_json():
+    raw = json.dumps({f"section_{n}": f"body {n}" for n in range(1, 7)})
+    result = parse_response(raw)
+    assert set(result.keys()) == {"1", "2", "3", "4", "5", "6"}
+    assert result["3"] == "body 3"
+
+
+def test_parse_response_json_in_code_fence():
+    payload = json.dumps({"section_1": "market", "section_2": "comp"})
+    raw = f"```json\n{payload}\n```"
+    result = parse_response(raw)
+    assert result["1"] == "market"
+    assert result["2"] == "comp"
+
+
+def test_parse_response_skips_blank_sections():
+    raw = json.dumps({"section_1": "data", "section_2": "   "})
+    result = parse_response(raw)
+    assert "1" in result
+    assert "2" not in result
+
+
+def test_parse_response_falls_back_to_markers():
+    raw = "SECTION_1: MARKET\nmarket body\n\nSECTION_2: COMP\ncomp body"
+    result = parse_response(raw)
+    assert set(result.keys()) == {"1", "2"}
+
+
+def test_parse_response_empty():
+    assert parse_response("") == {}
+
+
+def test_sections_to_text_roundtrip():
+    sections = {"1": "alpha", "3": "gamma"}
+    text = sections_to_text(sections)
+    assert "SECTION_1: MARKET SNAPSHOT" in text
+    assert "alpha" in text
+    assert "SECTION_3: COMPETITOR COMPARISON TABLE" in text
+    # sections not present are skipped
+    assert "SECTION_2" not in text
