@@ -56,6 +56,20 @@ def _build_queries(
     return queries
 
 
+# Messages SerpAPI returns when a query simply has no organic results. These are
+# expected (especially for strict site:/RERA queries) and must not alarm the user.
+_BENIGN_SERP_ERRORS = (
+    "hasn't returned any results",
+    "has not returned any results",
+    "no results found",
+)
+
+
+def _is_benign_serp_error(msg: str) -> bool:
+    low = msg.lower()
+    return any(p in low for p in _BENIGN_SERP_ERRORS)
+
+
 def _fetch_organic(query: str, serp_key: str) -> tuple[list[dict], str]:
     """Return (organic_results, error_message). error_message is '' on success."""
     try:
@@ -76,9 +90,15 @@ def _fetch_organic(query: str, serp_key: str) -> tuple[list[dict], str]:
         return [], f"request failed: {e}"
 
     # SerpAPI reports problems (bad key, out of searches, etc.) in an "error" field.
+    # But it ALSO uses that field for the benign "no results for this query" case,
+    # which is normal for strict site:/RERA queries - that is an empty result, not
+    # a failure, so we must not surface it as an error banner.
     if isinstance(data, dict) and data.get("error"):
-        logger.warning("SerpAPI error for %r: %s", query, data["error"])
-        return [], str(data["error"])
+        msg = str(data["error"])
+        if _is_benign_serp_error(msg):
+            return [], ""
+        logger.warning("SerpAPI error for %r: %s", query, msg)
+        return [], msg
 
     return data.get("organic_results", [])[:4], ""
 
