@@ -8,7 +8,10 @@ from pathlib import Path
 MEMORY_DB_PATH = str(Path(__file__).parent / "re_memory.db")
 
 GROQ_MODEL = "openai/gpt-oss-120b"
-GROQ_MAX_TOKENS = 8000          # higher so the JSON payload is not truncated mid-section
+# Groq's free tier allows ~8,000 tokens/minute, and max_tokens is RESERVED against
+# that limit (input + max_tokens must fit). Keep output modest so input + output
+# stays well under the TPM cap; raise this (and the source budget) on a paid tier.
+GROQ_MAX_TOKENS = 3000
 GROQ_TEMPERATURE = 0            # deterministic: we want grounded extraction, not creative prose
 GROQ_MAX_RETRIES = 2
 GROQ_RETRY_DELAY_SECONDS = 3
@@ -17,21 +20,24 @@ SERPAPI_URL = "https://serpapi.com/search"
 SERPAPI_NUM_RESULTS = 5
 SERPAPI_COUNTRY = "in"
 SERPAPI_LANGUAGE = "en"
-SERPAPI_TIMEOUT = 12
+SERPAPI_TIMEOUT = 20
 
 # Fetching the actual pages behind the top results (not just Google snippets).
 PAGE_FETCH_ENABLED = True
-MAX_PAGES_TO_FETCH = 8          # unique URLs fetched across all queries (bounds runtime)
+MAX_PAGES_TO_FETCH = 6          # unique URLs fetched across all queries (bounds runtime)
 PAGE_FETCH_TIMEOUT = 8          # seconds per page
-PAGE_TEXT_CHAR_LIMIT = 1800     # chars of extracted text kept per page
+PAGE_TEXT_CHAR_LIMIT = 1200     # chars of extracted text kept per page
 PAGE_FETCH_USER_AGENT = (
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 )
 
-LIVE_DATA_SNIPPET_LIMIT = 14000  # char budget for the sources block passed to the LLM
+# Char budget for the sources block in the prompt. Kept small so the whole request
+# fits the free-tier TPM limit (see GROQ_MAX_TOKENS); raise it on a paid Groq tier.
+LIVE_DATA_SNIPPET_LIMIT = 6000
 LIVE_DATA_DISPLAY_LIMIT = 6000   # char budget for the "raw data" expander in the UI
 MAX_COMPETITORS = 5
+MAX_MEMORY_FACTS = 20            # cap remembered facts injected into the prompt (bounds tokens)
 
 PRODUCT_TYPES = ["Residential", "Commercial", "Mixed-use", "Plots", "Warehousing"]
 

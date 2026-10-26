@@ -23,6 +23,11 @@ try:
 except ImportError:
     MEMORY_DB_PATH = str(Path(__file__).parent / "re_memory.db")
 
+try:
+    from config import MAX_MEMORY_FACTS
+except ImportError:
+    MAX_MEMORY_FACTS = 20
+
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS projects (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -151,7 +156,7 @@ def _age(ts: float) -> str:
 
 def format_memory_block(city: str, db_path: str | None = None) -> tuple[str, str]:
     """Return (remembered_facts_text, corrections_text) for prompt injection."""
-    projects = recall_projects(city, db_path)
+    projects = recall_projects(city, db_path)[:MAX_MEMORY_FACTS]
     corrections = recall_corrections(city, db_path)
 
     mem = ""
