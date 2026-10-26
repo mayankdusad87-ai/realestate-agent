@@ -249,7 +249,15 @@ if run:
                         st.write(f"API call failed, retrying ({attempt}/{GROQ_MAX_RETRIES})...")
                         time.sleep(GROQ_RETRY_DELAY_SECONDS)
                     else:
-                        st.error(f"\u26a0\ufe0f AI analysis failed after {GROQ_MAX_RETRIES} attempts: {e}")
+                        msg = str(e)
+                        if "rate_limit" in msg or "413" in msg or "too large" in msg.lower():
+                            st.error(
+                                "\u26a0\ufe0f Hit Groq's free-tier token-per-minute limit. "
+                                "Try again in a minute, reduce competitors, or upgrade your Groq "
+                                "tier for a larger limit."
+                            )
+                        else:
+                            st.error(f"\u26a0\ufe0f AI analysis failed after {GROQ_MAX_RETRIES} attempts: {e}")
                         st.stop()
             status.update(label="\u2705 Analysis complete!", state="complete")
 
