@@ -14,8 +14,14 @@ instance. Point MEMORY_DB_PATH at durable storage for cross-deploy persistence.
 import sqlite3
 import time
 from contextlib import closing
+from pathlib import Path
 
-from config import MEMORY_DB_PATH
+# Import the configured DB path, but never let a missing/stale config constant
+# take the whole app down - fall back to a local file beside this module.
+try:
+    from config import MEMORY_DB_PATH
+except ImportError:
+    MEMORY_DB_PATH = str(Path(__file__).parent / "re_memory.db")
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS projects (
