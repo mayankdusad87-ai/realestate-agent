@@ -127,6 +127,11 @@ Write the markdown INSIDE each string using the structure below. Use REAL line
 breaks between bullets and table rows (an actual newline in the JSON string), not
 the literal two characters backslash-n.
 
+BE CONCISE - this has a limited output budget. Use short phrases, not paragraphs.
+Cover the named competitors plus AT MOST 2 discovered ones; keep the comparison
+table to AT MOST 6 rows. A complete, valid JSON object matters more than length -
+never run past the budget mid-document.
+
 section_1 (MARKET SNAPSHOT):
 - Avg INR/sqft range: <range> (carpet, {micromarket}) <tag>
 - Total active inventory: <projects / units> <tag>

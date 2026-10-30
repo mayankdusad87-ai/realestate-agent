@@ -14,9 +14,12 @@ logger = logging.getLogger(__name__)
 from config import (
     GROQ_MAX_RETRIES,
     GROQ_MAX_TOKENS,
+    GROQ_MIN_OUTPUT_TOKENS,
     GROQ_MODEL,
     GROQ_RETRY_DELAY_SECONDS,
     GROQ_TEMPERATURE,
+    GROQ_TPM_BUDGET,
+    GROQ_TPM_SAFETY_MARGIN,
     LAUNCH_TIMELINES,
     LIVE_DATA_DISPLAY_LIMIT,
     PRODUCT_TYPES,
@@ -230,6 +233,12 @@ if run:
                 memory_data=memory_data,
                 corrections_data=corrections_data,
             )
+            # Size the output budget to whatever room is left under the TPM limit
+            # after the input, so the report can finish without exceeding the cap.
+            est_input_tokens = len(prompt) // 4  # ~4 chars per token
+            output_budget = GROQ_TPM_BUDGET - est_input_tokens - GROQ_TPM_SAFETY_MARGIN
+            output_budget = max(GROQ_MIN_OUTPUT_TOKENS, min(GROQ_MAX_TOKENS, output_budget))
+
             client = Groq(api_key=groq_key)
             result = None
             for attempt in range(1, GROQ_MAX_RETRIES + 1):
@@ -237,7 +246,7 @@ if run:
                     response = client.chat.completions.create(
                         model=GROQ_MODEL,
                         messages=[{"role": "user", "content": prompt}],
-                        max_tokens=GROQ_MAX_TOKENS,
+                        max_tokens=output_budget,
                         temperature=GROQ_TEMPERATURE,
                         response_format={"type": "json_object"},
                     )
