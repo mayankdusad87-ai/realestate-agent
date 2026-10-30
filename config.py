@@ -9,9 +9,13 @@ MEMORY_DB_PATH = str(Path(__file__).parent / "re_memory.db")
 
 GROQ_MODEL = "openai/gpt-oss-120b"
 # Groq's free tier allows ~8,000 tokens/minute, and max_tokens is RESERVED against
-# that limit (input + max_tokens must fit). Keep output modest so input + output
-# stays well under the TPM cap; raise this (and the source budget) on a paid tier.
-GROQ_MAX_TOKENS = 3000
+# that limit (input + max_tokens must fit). We size the output budget DYNAMICALLY
+# at call time (GROQ_TPM_BUDGET - estimated input), capped by GROQ_MAX_TOKENS, so we
+# use all the room left for the report without ever exceeding the per-minute limit.
+GROQ_TPM_BUDGET = 8000          # per-minute token limit of the tier (raise on paid)
+GROQ_MAX_TOKENS = 5000          # ceiling on output tokens (used when input is small)
+GROQ_MIN_OUTPUT_TOKENS = 1500   # floor; below this the report can't complete
+GROQ_TPM_SAFETY_MARGIN = 500    # keep clear of the hard limit
 GROQ_TEMPERATURE = 0            # deterministic: we want grounded extraction, not creative prose
 GROQ_MAX_RETRIES = 2
 GROQ_RETRY_DELAY_SECONDS = 3
@@ -32,9 +36,9 @@ PAGE_FETCH_USER_AGENT = (
     "(KHTML, like Gecko) Chrome/124.0 Safari/537.36"
 )
 
-# Char budget for the sources block in the prompt. Kept small so the whole request
-# fits the free-tier TPM limit (see GROQ_MAX_TOKENS); raise it on a paid Groq tier.
-LIVE_DATA_SNIPPET_LIMIT = 6000
+# Char budget for the sources block in the prompt. Kept small so the input leaves
+# enough of the TPM budget for the output; raise it on a paid Groq tier.
+LIVE_DATA_SNIPPET_LIMIT = 4500
 LIVE_DATA_DISPLAY_LIMIT = 6000   # char budget for the "raw data" expander in the UI
 MAX_COMPETITORS = 5
 MAX_MEMORY_FACTS = 20            # cap remembered facts injected into the prompt (bounds tokens)
