@@ -70,6 +70,23 @@ def _is_benign_serp_error(msg: str) -> bool:
     return any(p in low for p in _BENIGN_SERP_ERRORS)
 
 
+# Transient network hiccups (a slow/timed-out query). Not a config problem, and
+# harmless when other queries still returned data - shown as a quiet note, not red.
+_TRANSIENT_SERP_ERRORS = (
+    "timed out",
+    "timeout",
+    "connection",
+    "temporarily",
+    "max retries",
+    "read timed out",
+)
+
+
+def _is_transient_serp_error(msg: str) -> bool:
+    low = msg.lower()
+    return any(p in low for p in _TRANSIENT_SERP_ERRORS)
+
+
 def _fetch_organic(query: str, serp_key: str) -> tuple[list[dict], str]:
     """Return (organic_results, error_message). error_message is '' on success."""
     try:
@@ -208,6 +225,11 @@ def fetch_live_data(
 
     live_ok = any(s.get("snippet") or s.get("page_text") for s in sources)
 
+    # Split errors: transient network hiccups (timeouts) are a quiet note; anything
+    # else (bad key, quota, etc.) is a real problem worth a red banner.
+    transient = [e for e in errors if _is_transient_serp_error(e)]
+    critical = [e for e in errors if not _is_transient_serp_error(e)]
+
     return {
         "text": _format_sources(sources) if live_ok else "",
         "sources": sources,
@@ -217,5 +239,6 @@ def fetch_live_data(
             "sources": len(sources),
             "pages_fetched": pages_fetched,
         },
-        "errors": errors,
+        "errors": critical,
+        "warnings": transient,
     }

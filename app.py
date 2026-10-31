@@ -205,6 +205,13 @@ if run:
                 "\u26a0\ufe0f The web search reported problems, so results may be incomplete: "
                 + "; ".join(live["errors"])
             )
+        elif live.get("warnings") and live["live_ok"]:
+            # transient slowness on a few queries, but we still got data - quiet note
+            st.caption(
+                f"\u2139\ufe0f {len(live['warnings'])} source quer"
+                f"{'y was' if len(live['warnings']) == 1 else 'ies were'} slow and skipped; "
+                "the report uses the sources that did load."
+            )
         if not live["live_ok"]:
             st.warning(
                 "\u26a0\ufe0f No live sources were retrieved (check the SerpAPI key/quota). "
