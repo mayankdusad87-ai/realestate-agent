@@ -43,6 +43,10 @@ LIVE_DATA_DISPLAY_LIMIT = 6000   # char budget for the "raw data" expander in th
 MAX_COMPETITORS = 5
 MAX_MEMORY_FACTS = 20            # cap remembered facts injected into the prompt (bounds tokens)
 
+# Authoritative source connectors (Phase 1). Additive: when on, RERA-origin
+# results among the fetched sources are prioritized and tagged [verified: RERA].
+ENABLE_RERA_SOURCE = True
+
 PRODUCT_TYPES = ["Residential", "Commercial", "Mixed-use", "Plots", "Warehousing"]
 
 LAUNCH_TIMELINES = [

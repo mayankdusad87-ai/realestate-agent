@@ -118,6 +118,9 @@ GROUNDING RULES - follow exactly:
    note the change in one line. Never downgrade a remembered figure to a fabricated one.
 8. TEAM CORRECTIONS are authoritative and final. Where a correction applies, use its value
    exactly, tag it "[verified: correction]", and ignore any SOURCE or memory that disagrees.
+9. RERA REGISTRY FINDINGS are official registration data - the highest-trust PUBLIC source,
+   below only team corrections. A figure they support is "[verified: RERA]". Prefer RERA over
+   ordinary web sources, and quote registration numbers exactly when present.
 
 OUTPUT: Return a SINGLE JSON object and nothing else. No markdown fences, no commentary.
 Use EXACTLY these keys, each mapping to a markdown string:
