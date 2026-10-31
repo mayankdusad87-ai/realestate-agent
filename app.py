@@ -12,6 +12,7 @@ from groq import Groq
 logger = logging.getLogger(__name__)
 
 from config import (
+    ENABLE_RERA_SOURCE,
     GROQ_MAX_RETRIES,
     GROQ_MAX_TOKENS,
     GROQ_MIN_OUTPUT_TOKENS,
@@ -25,6 +26,7 @@ from config import (
     PRODUCT_TYPES,
 )
 import memory_store
+from sources import build_authoritative_block
 from data_fetcher import fetch_live_data
 from ppt.generator import generate_ppt
 from prompt_builder import (
@@ -199,6 +201,14 @@ if run:
                 status.update(label="\u26a0\ufe0f No live data retrieved", state="error")
 
         live_data = live["text"]
+
+        # Phase 1: prioritize authoritative (RERA) findings among the fetched sources.
+        # Purely additive - if disabled or nothing found, live_data is unchanged.
+        if ENABLE_RERA_SOURCE and live.get("sources"):
+            rera_block, rera_count = build_authoritative_block(live["sources"], city)
+            if rera_block:
+                live_data = rera_block + "\n\n" + live_data
+                st.caption(f"\U0001f3db️ {rera_count} RERA registry finding(s) prioritized as [verified: RERA].")
 
         if live["errors"]:
             st.error(
