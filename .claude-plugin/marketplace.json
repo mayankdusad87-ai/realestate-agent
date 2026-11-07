@@ -1,0 +1,17 @@
+{
+  "name": "realestate-tools",
+  "owner": {
+    "name": "Mayank Dusad"
+  },
+  "plugins": [
+    {
+      "name": "competition-analysis",
+      "source": "./",
+      "description": "Grounded, source-labeled real estate competitor-intelligence skill: market pricing, competitor deep-dives, RERA registry checks, pricing strategy, gaps and risk flags — every figure tagged verified / estimated / unknown.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Mayank Dusad"
+      }
+    }
+  ]
+}
