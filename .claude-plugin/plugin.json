@@ -1,0 +1,17 @@
+{
+  "name": "competition-analysis",
+  "version": "0.1.0",
+  "description": "Grounded, source-labeled real estate competitor-intelligence: market pricing, competitor deep-dives, RERA registry checks, pricing strategy, gaps and risk flags — every figure tagged verified / estimated / unknown with its source.",
+  "author": {
+    "name": "Mayank Dusad"
+  },
+  "keywords": [
+    "real-estate",
+    "competition-analysis",
+    "market-research",
+    "rera",
+    "india",
+    "pricing",
+    "competitive-intelligence"
+  ]
+}
